@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claude Chat</title>
+<style>
+  :root {
+    --bg: #faf9f5; --panel: #ffffff; --ink: #1f1e1d; --muted: #6b6a68;
+    --accent: #c96442; --line: #e5e3dc; --user: #f0eee6; --danger: #b3261e;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #262624; --panel: #30302e; --ink: #f0eee6; --muted: #a8a6a0;
+      --accent: #e08a6d; --line: #444440; --user: #3a3a37; --danger: #f2b8b5;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+    display: flex; flex-direction: column;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  header { padding: 12px 0; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  header h1 { font-size: 1.1rem; margin: 0; margin-right: auto; }
+  details { width: 100%; }
+  summary { cursor: pointer; color: var(--muted); padding: 6px 0; }
+  .settings { display: grid; gap: 10px; padding: 8px 0 12px; }
+  .settings label { font-weight: 600; font-size: .9rem; display: grid; gap: 4px; }
+  input, select, textarea {
+    font: inherit; color: var(--ink); background: var(--panel);
+    border: 1px solid var(--line); border-radius: 8px; padding: 8px; width: 100%; min-width: 0;
+  }
+  textarea { min-height: 70px; resize: vertical; }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .muted { color: var(--muted); font-size: .85rem; }
+  main { flex: 1; overflow-y: auto; padding: 16px 0; display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+  .msg { max-width: min(720px, 92%); padding: 10px 14px; border-radius: 12px; white-space: pre-wrap; word-wrap: break-word; }
+  .msg.user { align-self: flex-end; background: var(--user); }
+  .msg.assistant { align-self: flex-start; background: var(--panel); border: 1px solid var(--line); }
+  .msg.error { align-self: stretch; color: var(--danger); border: 1px dashed var(--danger); }
+  .files { font-size: .8rem; color: var(--muted); margin-top: 4px; }
+  footer { border-top: 1px solid var(--line); padding: 12px 0 max(12px, env(safe-area-inset-bottom, 0px)); display: grid; gap: 8px; }
+  #attached { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip { background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; font-size: .8rem; display: inline-flex; gap: 6px; align-items: center; }
+  .chip button { all: unset; cursor: pointer; color: var(--muted); }
+  .input-row { display: flex; gap: 8px; align-items: flex-end; }
+  #text { flex: 1; min-height: 44px; max-height: 180px; }
+  button {
+    font: inherit; border: 0; border-radius: 8px; padding: 10px 14px; cursor: pointer;
+    background: var(--accent); color: #fff;
+  }
+  button.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+  button:disabled { opacity: .5; cursor: default; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Claude Chat</h1>
+  <select id="model" aria-label="Model" style="width:auto"></select>
+  <button class="ghost" id="clear" type="button">New chat</button>
+</header>
+
+<details id="setup">
+  <summary>Setup: API key and memory</summary>
+  <div class="settings">
+    <label>API key
+      <input id="apiKey" type="password" autocomplete="off" placeholder="sk-ant-…">
+    </label>
+    <label class="row" style="font-weight:400">
+      <input id="remember" type="checkbox" style="width:auto"> Remember key on this device
+    </label>
+    <p class="muted" style="margin:0">The key is sent only to Anthropic. Only tick "Remember" on a device you control, because the key is then saved in this browser.</p>
+    <label>System prompt
+      <textarea id="system">You are a helpful assistant.</textarea>
+    </label>
+    <label>Memory (one note per line, sent with every message)
+      <textarea id="memory" placeholder="e.g. I write in British English"></textarea>
+    </label>
+    <label>Max reply length
+      <input id="maxTokens" type="number" min="1" max="8192" value="1024">
+    </label>
+    <div class="row"><button id="saveSettings" type="button">Save settings</button><span id="saved" class="muted" hidden>Saved</span></div>
+  </div>
+</details>
+
+<main id="chat" aria-live="polite"></main>
+
+<footer>
+  <div id="attached"></div>
+  <div class="input-row">
+    <button class="ghost" id="attach" type="button" title="Upload files">Upload</button>
+    <input id="fileInput" type="file" multiple hidden accept=".txt,.md,.csv,.json,.py,.js,.html,.css,.pdf,image/*">
+    <textarea id="text" placeholder="Message Claude…" rows="1"></textarea>
+    <button id="send" type="button">Send</button>
+  </div>
+  <div class="muted">Text, Markdown, CSV, JSON, code, PDF and image files work. Press Enter to send, Shift+Enter for a new line.</div>
+</footer>
+
+<script>
+(() => {
+  const MODELS = ["claude-haiku-5-5", "claude-sonnet-5-5", "claude-opus-5-5"];
+  const API_URL = "https://api.anthropic.com/v1/messages";
+  const store = {
+    get(key, fallback) {
+      try { const v = localStorage.getItem(key); return v === null ? fallback : v; } catch { return fallback; }
+    },
+    set(key, value) { try { localStorage.setItem(key, value); } catch {} },
+    remove(key) { try { localStorage.removeItem(key); } catch {} },
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const els = {
+    model: $("model"), apiKey: $("apiKey"), remember: $("remember"), system: $("system"),
+    memory: $("memory"), maxTokens: $("maxTokens"), saveSettings: $("saveSettings"), saved: $("saved"),
+    chat: $("chat"), text: $("text"), send: $("send"), attach: $("attach"), fileInput: $("fileInput"),
+    attached: $("attached"), clear: $("clear"), setup: $("setup"),
+  };
+
+  let history = [];      // API messages: { role, content }
+  let pending = [];      // files waiting to go with the next message
+  let busy = false;
+
+  // ---- settings -----------------------------------------------------------
+  MODELS.forEach((m) => {
+    const opt = document.createElement("option");
+    opt.value = m; opt.textContent = m;
+    els.model.appendChild(opt);
+  });
+  els.model.value = store.get("model", MODELS[0]);
+  els.model.addEventListener("change", () => store.set("model", els.model.value));
+
+  const rememberedKey = store.get("apiKey", "");
+  if (rememberedKey) { els.apiKey.value = rememberedKey; els.remember.checked = true; }
+  els.system.value = store.get("system", els.system.value);
+  els.memory.value = store.get("memory", "");
+  els.maxTokens.value = store.get("maxTokens", "1024");
+  if (!els.apiKey.value) els.setup.open = true;
+
+  els.saveSettings.addEventListener("click", () => {
+    store.set("system", els.system.value);
+    store.set("memory", els.memory.value);
+    store.set("maxTokens", els.maxTokens.value);
+    if (els.remember.checked && els.apiKey.value.trim()) store.set("apiKey", els.apiKey.value.trim());
+    else store.remove("apiKey");
+    els.saved.hidden = false;
+    setTimeout(() => (els.saved.hidden = true), 1500);
+  });
+
+  function systemPrompt() {
+    const notes = els.memory.value.split("\n").map((s) => s.trim()).filter(Boolean);
+    let prompt = els.system.value.trim() || "You are a helpful assistant.";
+    if (notes.length) prompt += "\n\nThings to remember about the user:\n" + notes.map((n) => "- " + n).join("\n");
+    return prompt;
+  }
+
+  // ---- files --------------------------------------------------------------
+  function readAsBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result).split(",")[1]);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function fileToBlock(file) {
+    if (file.type.startsWith("image/")) {
+      return { type: "image", source: { type: "base64", media_type: file.type, data: await readAsBase64(file) } };
+    }
+    if (file.type === "application/pdf") {
+      return { type: "document", source: { type: "base64", media_type: "application/pdf", data: await readAsBase64(file) } };
+    }
+    const text = await file.text();
+    return { type: "text", text: `[File: ${file.name}]\n${text}` };
+  }
+
+  function renderAttached() {
+    els.attached.innerHTML = "";
+    pending.forEach((item, i) => {
+      const chip = document.createElement("span");
+      chip.className = "chip";
+      chip.textContent = item.name;
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.textContent = "×";
+      remove.setAttribute("aria-label", "Remove " + item.name);
+      remove.addEventListener("click", () => { pending.splice(i, 1); renderAttached(); });
+      chip.appendChild(remove);
+      els.attached.appendChild(chip);
+    });
+  }
+
+  els.attach.addEventListener("click", () => els.fileInput.click());
+  els.fileInput.addEventListener("change", async () => {
+    for (const file of els.fileInput.files) {
+      if (file.size > 20 * 1024 * 1024) {
+        addMessage("error", `${file.name} is larger than 20 MB and was skipped.`);
+        continue;
+      }
+      try {
+        pending.push({ name: file.name, block: await fileToBlock(file) });
+      } catch (err) {
+        addMessage("error", `Could not read ${file.name}: ${err.message}`);
+      }
+    }
+    els.fileInput.value = "";
+    renderAttached();
+  });
+
+  // ---- chat ---------------------------------------------------------------
+  function addMessage(role, text, fileNames = []) {
+    const div = document.createElement("div");
+    div.className = "msg " + role;
+    div.textContent = text;
+    if (fileNames.length) {
+      const f = document.createElement("div");
+      f.className = "files";
+      f.textContent = "Files: " + fileNames.join(", ");
+      div.appendChild(f);
+    }
+    els.chat.appendChild(div);
+    els.chat.scrollTop = els.chat.scrollHeight;
+    return div;
+  }
+
+  async function callClaude(messages) {
+    const key = els.apiKey.value.trim();
+    if (!key) throw new Error("Add your API key in Setup first.");
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-api-key": key,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true",
+      },
+      body: JSON.stringify({
+        model: els.model.value,
+        max_tokens: Math.min(Math.max(parseInt(els.maxTokens.value, 10) || 1024, 1), 8192),
+        system: systemPrompt(),
+        messages,
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error((data.error && data.error.message) || `Request failed (${res.status})`);
+    return data.content.filter((b) => b.type === "text").map((b) => b.text).join("\n");
+  }
+
+  async function send() {
+    const typed = els.text.value.trim();
+    if (busy || (!typed && pending.length === 0)) return;
+
+    const content = pending.map((p) => p.block);
+    const names = pending.map((p) => p.name);
+    if (typed) content.push({ type: "text", text: typed });
+
+    busy = true;
+    els.send.disabled = true;
+    addMessage("user", typed || "(sent files)", names);
+    history.push({ role: "user", content: content.length === 1 && content[0].type === "text" ? content[0].text : content });
+    els.text.value = "";
+    pending = [];
+    renderAttached();
+
+    const thinking = addMessage("assistant", "…");
+    try {
+      const reply = await callClaude(history);
+      thinking.textContent = reply;
+      history.push({ role: "assistant", content: reply });
+    } catch (err) {
+      thinking.remove();
+      history.pop(); // drop the user turn so the conversation can be retried
+      addMessage("error", err.message);
+    } finally {
+      busy = false;
+      els.send.disabled = false;
+      els.text.focus();
+    }
+  }
+
+  els.send.addEventListener("click", send);
+  els.text.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
+  });
+  els.clear.addEventListener("click", () => {
+    history = []; pending = []; renderAttached(); els.chat.innerHTML = "";
+  });
+})();
+</script>
+</body>
+</html>
