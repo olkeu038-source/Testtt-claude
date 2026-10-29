@@ -2,351 +2,988 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Python Together Tracker</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f5f1e8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1a1915" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="PyTogether">
+<title>PyTogether</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #f6f5f1; --card: #ffffff; --text: #1d1d1f; --muted: #6b6b70;
-    --line: #e3e1da; --accent: #2f6fde; --accent-soft: #e6eefc;
-    --me: #2f6fde; --bro: #d9762b; --done: #2e9d5b;
+    --bg: #f5f1e8; --bg-2: #ede7da; --surface: #fffdf8; --surface-2: #f8f4ec;
+    --text: #1f1d1a; --text-2: #5e5a52; --muted: #8f897d; --line: #e4ddcf; --line-2: #d6cdbb;
+    --accent: #c96442; --accent-2: #b4552f; --accent-soft: #f6e3d9;
+    --me: #c96442; --me-soft: #f6e3d9; --bro: #3b7a8c; --bro-soft: #dcebee;
+    --good: #4f8a54; --good-soft: #e1eedd; --gold: #c99a2e;
+    --shadow-sm: 0 1px 2px rgba(60,45,20,.06), 0 1px 1px rgba(60,45,20,.04);
+    --shadow: 0 1px 2px rgba(60,45,20,.05), 0 8px 24px -8px rgba(60,45,20,.14);
+    --shadow-lg: 0 24px 60px -20px rgba(40,28,10,.35);
+    --r: 16px; --r-sm: 10px;
+    --serif: "Fraunces", Georgia, serif;
+    --sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, monospace;
+    --ease: cubic-bezier(.2,.8,.2,1);
+    --spring: cubic-bezier(.34,1.56,.64,1);
+    color-scheme: light;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #141416; --card: #1d1d21; --text: #ececf0; --muted: #9a9aa3;
-      --line: #2e2e34; --accent: #6d9bff; --accent-soft: #22304d;
-      --me: #6d9bff; --bro: #f0a060; --done: #4cc77f;
+      --bg: #1a1915; --bg-2: #22211c; --surface: #262520; --surface-2: #2d2b25; --text: #f1ece2; --text-2: #c2bbad;
+      --muted: #8e877a; --line: #36342d; --line-2: #45423a; --accent: #e07b57; --accent-2: #ea8e6c; --accent-soft: #3d2a21;
+      --me: #e07b57; --me-soft: #3d2a21; --bro: #6fb3c4; --bro-soft: #1f3439; --good: #7cbf80; --good-soft: #22331f; --gold: #e2b54c;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,.3); --shadow: 0 8px 24px -8px rgba(0,0,0,.5); --shadow-lg: 0 24px 60px -20px rgba(0,0,0,.7);
+      color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
-    --bg: #141416; --card: #1d1d21; --text: #ececf0; --muted: #9a9aa3;
-    --line: #2e2e34; --accent: #6d9bff; --accent-soft: #22304d;
-    --me: #6d9bff; --bro: #f0a060; --done: #4cc77f;
+    --bg: #1a1915; --bg-2: #22211c; --surface: #262520; --surface-2: #2d2b25; --text: #f1ece2; --text-2: #c2bbad;
+    --muted: #8e877a; --line: #36342d; --line-2: #45423a; --accent: #e07b57; --accent-2: #ea8e6c; --accent-soft: #3d2a21;
+    --me: #e07b57; --me-soft: #3d2a21; --bro: #6fb3c4; --bro-soft: #1f3439; --good: #7cbf80; --good-soft: #22331f; --gold: #e2b54c;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.3); --shadow: 0 8px 24px -8px rgba(0,0,0,.5); --shadow-lg: 0 24px 60px -20px rgba(0,0,0,.7);
+    color-scheme: dark;
   }
-  * { box-sizing: border-box; }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; }
   body {
-    margin: 0; background: var(--bg); color: var(--text);
-    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--text); font: 15px/1.55 var(--sans);
+    -webkit-font-smoothing: antialiased; min-height: 100vh; overflow-x: hidden;
+    transition: background .4s var(--ease), color .4s var(--ease);
   }
-  .wrap { max-width: 920px; margin: 0 auto; padding: 24px 16px 64px; }
-  h1 { margin: 0 0 4px; font-size: 26px; }
-  .sub { color: var(--muted); margin: 0 0 20px; }
-  nav { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; position: sticky; top: 0; background: var(--bg); padding: 8px 0; z-index: 2; }
-  nav button {
-    border: 1px solid var(--line); background: var(--card); color: var(--text);
-    padding: 7px 14px; border-radius: 999px; cursor: pointer; font: inherit;
-  }
-  nav button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
-  section { display: none; }
-  section.active { display: block; }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
-  .progress { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
-  .bar { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; margin-top: 6px; }
-  .bar > div { height: 100%; width: 0; transition: width .3s; }
-  .me .bar > div { background: var(--me); }
-  .bro .bar > div { background: var(--bro); }
-  .day-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-  .day-head h3 { margin: 0; font-size: 17px; }
-  .tag { font-size: 12px; color: var(--muted); }
-  .watch { background: var(--accent-soft); border-radius: 8px; padding: 8px 10px; margin: 10px 0; font-size: 14px; }
-  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  .cols h4 { margin: 6px 0; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
-  .cols .me h4 { color: var(--me); }
-  .cols .bro h4 { color: var(--bro); }
-  label.task { display: flex; gap: 8px; align-items: flex-start; padding: 4px 0; cursor: pointer; }
-  label.task input { margin-top: 4px; accent-color: var(--done); }
-  label.task.checked span { color: var(--muted); text-decoration: line-through; }
-  .day-done { color: var(--done); font-weight: 600; font-size: 13px; }
+  button { font: inherit; color: inherit; }
   a { color: var(--accent); }
-  .video { display: flex; gap: 12px; justify-content: space-between; align-items: flex-start; }
-  .video h3 { margin: 0 0 4px; font-size: 16px; }
-  .video p { margin: 0; color: var(--muted); font-size: 14px; }
-  .pill { font-size: 12px; padding: 2px 8px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); white-space: nowrap; }
-  form.add { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
-  form.add input, form.add select, textarea {
-    flex: 1 1 180px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px;
-    background: var(--card); color: var(--text); font: inherit;
+  ::selection { background: var(--accent-soft); }
+
+  /* ---------- App shell ---------- */
+  .app { display: grid; grid-template-columns: 248px 1fr; min-height: 100vh; }
+  .sidebar {
+    position: sticky; top: 0; height: 100vh; padding: 22px 14px; border-right: 1px solid var(--line);
+    display: flex; flex-direction: column; gap: 4px; background: var(--bg);
   }
-  textarea { width: 100%; min-height: 160px; resize: vertical; }
-  .btn { padding: 9px 14px; border-radius: 8px; border: 0; background: var(--accent); color: #fff; font: inherit; cursor: pointer; }
-  .btn.ghost { background: transparent; color: var(--text); border: 1px solid var(--line); }
-  ul.list { list-style: none; margin: 0; padding: 0; }
-  ul.list li { display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--line); }
-  ul.list li:last-child { border-bottom: 0; }
-  ul.list .meta { font-size: 12px; color: var(--muted); }
-  ul.list .grow { flex: 1; min-width: 0; overflow-wrap: anywhere; }
-  .x { background: none; border: 0; color: var(--muted); cursor: pointer; font-size: 18px; line-height: 1; }
-  .empty { color: var(--muted); font-style: italic; }
-  .who-me { color: var(--me); font-weight: 600; }
-  .who-bro { color: var(--bro); font-weight: 600; }
-  .who-both { color: var(--done); font-weight: 600; }
-  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-  @media (max-width: 620px) {
-    .cols, .progress { grid-template-columns: 1fr; }
-    .video { flex-direction: column; }
+  .brand { display: flex; align-items: center; gap: 10px; padding: 4px 10px 22px; }
+  .brand-mark {
+    width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center;
+    background: var(--accent); color: #fff; font: 600 18px var(--serif);
+    box-shadow: 0 6px 16px -6px var(--accent);
+  }
+  .brand-name { font: 600 19px var(--serif); letter-spacing: -.01em; }
+  .nav-item {
+    display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; border: 0;
+    background: none; cursor: pointer; text-align: left; color: var(--text-2); font-weight: 500; position: relative;
+    transition: background .2s, color .2s;
+  }
+  .nav-item svg { width: 19px; height: 19px; flex: none; }
+  .nav-item:hover { background: var(--bg-2); color: var(--text); }
+  .nav-item.active { background: var(--surface); color: var(--text); box-shadow: var(--shadow-sm); }
+  .nav-item.active::before {
+    content: ""; position: absolute; left: -14px; top: 9px; bottom: 9px; width: 3px; border-radius: 0 3px 3px 0; background: var(--accent);
+  }
+  .sidebar-foot { margin-top: auto; }
+  .main { min-width: 0; }
+  .topbar {
+    position: sticky; top: 0; z-index: 20; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 14px 32px; background: color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter: saturate(1.4) blur(14px); -webkit-backdrop-filter: saturate(1.4) blur(14px);
+    border-bottom: 1px solid transparent; transition: border-color .2s;
+  }
+  .topbar.scrolled { border-bottom-color: var(--line); }
+  .topbar h2 { margin: 0; font: 500 20px var(--serif); letter-spacing: -.01em; }
+  .mobile-brand { display: none; }
+
+  /* Learner switch */
+  .switch {
+    display: inline-flex; padding: 3px; background: var(--bg-2); border-radius: 999px; position: relative; border: 1px solid var(--line);
+  }
+  .switch button {
+    position: relative; z-index: 1; border: 0; background: none; padding: 6px 14px; border-radius: 999px; cursor: pointer;
+    font-weight: 600; font-size: 13px; color: var(--text-2); transition: color .25s; display: flex; align-items: center; gap: 6px; white-space: nowrap;
+  }
+  .switch button.on { color: var(--text); }
+  .switch .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .switch .pill-bg {
+    position: absolute; top: 3px; bottom: 3px; border-radius: 999px; background: var(--surface); box-shadow: var(--shadow-sm);
+    transition: left .35s var(--spring), width .35s var(--spring);
+  }
+
+  .content { padding: 28px 32px 120px; max-width: 1080px; }
+  .view { display: none; }
+  .view.active { display: block; animation: viewIn .5s var(--ease) both; }
+  @keyframes viewIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  .stagger > * { animation: rise .55s var(--ease) both; }
+  .stagger > *:nth-child(1) { animation-delay: .02s } .stagger > *:nth-child(2) { animation-delay: .07s }
+  .stagger > *:nth-child(3) { animation-delay: .12s } .stagger > *:nth-child(4) { animation-delay: .17s }
+  .stagger > *:nth-child(5) { animation-delay: .22s } .stagger > *:nth-child(6) { animation-delay: .27s }
+  .stagger > *:nth-child(7) { animation-delay: .32s } .stagger > *:nth-child(8) { animation-delay: .37s }
+  .stagger > *:nth-child(n+9) { animation-delay: .42s }
+  @keyframes rise { from { opacity: 0; transform: translateY(16px) scale(.985); } to { opacity: 1; transform: none; } }
+
+  /* ---------- Cards & primitives ---------- */
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 20px; box-shadow: var(--shadow-sm);
+    transition: transform .3s var(--ease), box-shadow .3s var(--ease), border-color .3s;
+  }
+  .card.lift:hover { transform: translateY(-3px); box-shadow: var(--shadow); border-color: var(--line-2); }
+  .eyebrow { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .h-serif { font-family: var(--serif); font-weight: 500; letter-spacing: -.015em; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; cursor: pointer;
+    padding: 10px 18px; border-radius: 999px; background: var(--text); color: var(--bg); font-weight: 600; font-size: 14px;
+    transition: transform .2s var(--spring), background .2s, box-shadow .2s; position: relative; overflow: hidden; text-decoration: none;
+  }
+  .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+  .btn:active { transform: scale(.97); }
+  .btn.accent { background: var(--accent); color: #fff; }
+  .btn.ghost { background: transparent; color: var(--text); border: 1px solid var(--line-2); }
+  .btn.ghost:hover { background: var(--surface); }
+  .btn.sm { padding: 7px 13px; font-size: 13px; }
+  .btn svg { width: 16px; height: 16px; }
+  .ripple { position: absolute; border-radius: 50%; transform: scale(0); background: currentColor; opacity: .25; animation: ripple .6s ease-out; pointer-events: none; }
+  @keyframes ripple { to { transform: scale(4); opacity: 0; } }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600;
+    background: var(--bg-2); color: var(--text-2); white-space: nowrap;
+  }
+  .chip.accent { background: var(--accent-soft); color: var(--accent); }
+  .chip.good { background: var(--good-soft); color: var(--good); }
+  .chip.bro { background: var(--bro-soft); color: var(--bro); }
+  .field {
+    width: 100%; padding: 11px 14px; border: 1px solid var(--line-2); border-radius: 12px; background: var(--surface);
+    color: var(--text); font: inherit; transition: border-color .2s, box-shadow .2s; outline: none;
+  }
+  .field:focus { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+  textarea.field { min-height: 220px; resize: vertical; line-height: 1.65; }
+
+  /* ---------- Home ---------- */
+  .hero {
+    position: relative; overflow: hidden; border-radius: 22px; padding: 34px; margin-bottom: 20px;
+    background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; border-radius: 50%; filter: blur(50px); opacity: .55; pointer-events: none;
+    animation: float 14s ease-in-out infinite alternate;
+  }
+  .hero::before { width: 320px; height: 320px; background: var(--accent-soft); right: -80px; top: -120px; }
+  .hero::after { width: 260px; height: 260px; background: var(--bro-soft); right: 160px; bottom: -160px; animation-duration: 18s; }
+  @keyframes float { to { transform: translate(-40px, 30px) scale(1.15); } }
+  .hero > * { position: relative; }
+  .hero h1 { margin: 6px 0 8px; font: 500 clamp(28px, 4.6vw, 42px)/1.1 var(--serif); letter-spacing: -.025em; }
+  .hero h1 em { font-style: italic; color: var(--accent); }
+  .hero p { margin: 0 0 22px; color: var(--text-2); max-width: 520px; font-size: 16px; }
+  .hero-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .typed { font-family: var(--mono); font-size: 13px; color: var(--muted); margin-top: 22px; min-height: 20px; }
+  .typed .caret { display: inline-block; width: 7px; height: 15px; background: var(--accent); vertical-align: -2px; margin-left: 2px; animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .stat { display: flex; align-items: center; gap: 16px; }
+  .ring { position: relative; width: 74px; height: 74px; flex: none; }
+  .ring svg { transform: rotate(-90deg); width: 100%; height: 100%; }
+  .ring circle { fill: none; stroke-width: 7; }
+  .ring .track { stroke: var(--bg-2); }
+  .ring .fill { stroke-linecap: round; transition: stroke-dashoffset 1.2s var(--ease); }
+  .ring .label { position: absolute; inset: 0; display: grid; place-items: center; font: 600 16px var(--sans); }
+  .stat .name { font-weight: 600; }
+  .stat .sub { color: var(--muted); font-size: 13px; }
+  .big-num { font: 500 40px/1 var(--serif); letter-spacing: -.02em; }
+  .flame { display: inline-block; animation: flicker 1.6s ease-in-out infinite; transform-origin: 50% 90%; }
+  @keyframes flicker { 0%,100% { transform: scale(1) rotate(-2deg); } 50% { transform: scale(1.1) rotate(3deg); } }
+
+  .today { display: grid; grid-template-columns: 1.15fr 1fr; gap: 0; padding: 0; overflow: hidden; }
+  .today .left { padding: 24px; }
+  .today h3 { margin: 6px 0 14px; font: 500 24px/1.2 var(--serif); letter-spacing: -.015em; }
+  .today .thumb-wrap { position: relative; min-height: 220px; cursor: pointer; overflow: hidden; background: var(--bg-2); }
+
+  .mini-tasks { list-style: none; margin: 0 0 18px; padding: 0; display: grid; gap: 8px; }
+
+  /* ---------- Timeline (plan) ---------- */
+  .week-label { margin: 28px 0 12px; display: flex; align-items: center; gap: 12px; }
+  .week-label:first-child { margin-top: 0; }
+  .week-label::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .days { display: grid; gap: 12px; }
+  .day { padding: 0; overflow: hidden; }
+  .day-head {
+    display: flex; align-items: center; gap: 16px; padding: 16px 20px; cursor: pointer; border: 0; background: none;
+    width: 100%; text-align: left;
+  }
+  .day-num {
+    width: 46px; height: 46px; border-radius: 14px; flex: none; display: grid; place-items: center;
+    background: var(--bg-2); font: 600 17px var(--serif); position: relative; transition: background .3s, color .3s;
+  }
+  .day.done .day-num { background: var(--good); color: #fff; }
+  .day.current .day-num { background: var(--accent); color: #fff; box-shadow: 0 0 0 0 var(--accent); animation: pulse 2.2s infinite; }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 50%, transparent); } 70% { box-shadow: 0 0 0 12px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+  .day-title { flex: 1; min-width: 0; }
+  .day-title strong { display: block; font-weight: 600; font-size: 15.5px; }
+  .day-title span { color: var(--muted); font-size: 13px; }
+  .day-meta { display: flex; align-items: center; gap: 10px; }
+  .mini-bar { width: 64px; height: 6px; border-radius: 99px; background: var(--bg-2); overflow: hidden; }
+  .mini-bar > i { display: block; height: 100%; background: var(--good); border-radius: 99px; transition: width .6s var(--ease); }
+  .chev { width: 20px; height: 20px; color: var(--muted); transition: transform .35s var(--ease); flex: none; }
+  .day.open .chev { transform: rotate(180deg); }
+  .day-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .45s var(--ease); }
+  .day.open .day-body { grid-template-rows: 1fr; }
+  .day-body > div { overflow: hidden; }
+  .day-inner { padding: 0 20px 20px; display: grid; grid-template-columns: 220px 1fr; gap: 20px; }
+  .vid-mini { border-radius: 12px; overflow: hidden; position: relative; aspect-ratio: 16/9; cursor: pointer; background: var(--bg-2); align-self: start; }
+  .vid-mini + .vid-cap { font-size: 12.5px; color: var(--text-2); margin-top: 8px; }
+  .tasks-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .tasks-cols h4 { margin: 0 0 8px; font-size: 12px; letter-spacing: .07em; text-transform: uppercase; display: flex; align-items: center; gap: 6px; }
+  .tasks-cols .who-me h4 { color: var(--me); } .tasks-cols .who-bro h4 { color: var(--bro); }
+  .tasks-cols .dim { opacity: .5; }
+
+  /* Custom checkbox task */
+  .task {
+    display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; margin: 0 -10px; border-radius: 10px; cursor: pointer;
+    transition: background .2s; user-select: none;
+  }
+  .task:hover { background: var(--surface-2); }
+  .task input { position: absolute; opacity: 0; pointer-events: none; }
+  .box {
+    width: 20px; height: 20px; border-radius: 7px; border: 1.8px solid var(--line-2); flex: none; margin-top: 1px;
+    display: grid; place-items: center; transition: all .25s var(--spring); background: var(--surface);
+  }
+  .box svg { width: 13px; height: 13px; color: #fff; stroke-dasharray: 20; stroke-dashoffset: 20; transition: stroke-dashoffset .3s .05s var(--ease); }
+  .task input:checked + .box { background: var(--good); border-color: var(--good); transform: scale(1.08); }
+  .task input:checked + .box svg { stroke-dashoffset: 0; }
+  .task input:focus-visible + .box { box-shadow: 0 0 0 4px var(--accent-soft); }
+  .task .t { transition: color .25s; position: relative; }
+  .task input:checked ~ .t { color: var(--muted); }
+  .task .t::after {
+    content: ""; position: absolute; left: 0; top: 50%; height: 1.5px; width: 0; background: var(--muted); transition: width .35s var(--ease);
+  }
+  .task input:checked ~ .t::after { width: 100%; }
+
+  /* ---------- Videos ---------- */
+  .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+  .filter {
+    border: 1px solid var(--line-2); background: var(--surface); padding: 7px 14px; border-radius: 999px; cursor: pointer;
+    font-size: 13px; font-weight: 600; color: var(--text-2); transition: all .2s;
+  }
+  .filter:hover { color: var(--text); border-color: var(--muted); }
+  .filter.on { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .vgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 18px; }
+  .vcard { padding: 0; overflow: hidden; cursor: pointer; display: flex; flex-direction: column; }
+  .thumb { position: relative; aspect-ratio: 16/9; overflow: hidden; background: linear-gradient(135deg, var(--accent-soft), var(--bro-soft)); }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .6s var(--ease), filter .4s; }
+  .vcard:hover .thumb img, .today .thumb-wrap:hover img, .vid-mini:hover img { transform: scale(1.06); }
+  .thumb::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.45), transparent 50%); opacity: .8; transition: opacity .3s; }
+  .play {
+    position: absolute; z-index: 2; left: 50%; top: 50%; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 50%;
+    background: rgba(255,255,255,.94); display: grid; place-items: center; box-shadow: 0 8px 24px rgba(0,0,0,.3);
+    transform: scale(.85); opacity: .9; transition: transform .35s var(--spring), opacity .3s;
+  }
+  .play svg { width: 22px; height: 22px; color: #111; margin-left: 3px; }
+  .vcard:hover .play, .today .thumb-wrap:hover .play, .vid-mini:hover .play { transform: scale(1); opacity: 1; }
+  .vid-mini .play { width: 40px; height: 40px; margin: -20px 0 0 -20px; } .vid-mini .play svg { width: 16px; height: 16px; }
+  .badge-tl { position: absolute; z-index: 2; left: 10px; top: 10px; display: flex; gap: 6px; }
+  .badge-tl span { background: rgba(0,0,0,.65); color: #fff; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 6px; backdrop-filter: blur(4px); }
+  .watched-badge { position: absolute; z-index: 2; right: 10px; top: 10px; background: var(--good); color: #fff; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; }
+  .vinfo { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+  .vinfo h3 { margin: 0; font-size: 15px; line-height: 1.35; font-weight: 600; }
+  .channel { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-2); }
+  .avatar { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 10px; font-weight: 700; color: #fff; flex: none; }
+  .vinfo p { margin: 0; font-size: 13px; color: var(--muted); }
+  .vinfo .row { margin-top: auto; padding-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
+
+  /* ---------- Modal player ---------- */
+  .modal {
+    position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 20px;
+    background: rgba(15,12,8,.6); backdrop-filter: blur(8px); opacity: 0; pointer-events: none; transition: opacity .3s;
+  }
+  .modal.open { opacity: 1; pointer-events: auto; }
+  .modal-box {
+    width: min(960px, 100%); background: var(--surface); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-lg);
+    transform: translateY(24px) scale(.96); transition: transform .45s var(--spring);
+  }
+  .modal.open .modal-box { transform: none; }
+  .player { aspect-ratio: 16/9; background: #000; }
+  .player iframe { width: 100%; height: 100%; border: 0; display: block; }
+  .modal-foot { padding: 16px 20px; display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+  .modal-foot h3 { margin: 0; font-size: 16px; }
+  .modal-foot .channel { margin-top: 2px; }
+  .modal-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* ---------- Journal / goals ---------- */
+  .composer { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+  .composer .field { flex: 1 1 260px; }
+  .composer select.field { flex: 0 0 auto; width: auto; }
+  .feed { display: grid; gap: 10px; }
+  .entry { display: flex; gap: 14px; align-items: flex-start; padding: 16px 18px; }
+  .entry.enter { animation: pop .45s var(--spring) both; }
+  @keyframes pop { from { opacity: 0; transform: translateY(-8px) scale(.97); } to { opacity: 1; transform: none; } }
+  .entry.leave { animation: leave .3s var(--ease) forwards; }
+  @keyframes leave { to { opacity: 0; transform: translateX(30px); height: 0; padding: 0; margin: 0; } }
+  .entry .grow { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+  .entry .meta { font-size: 12.5px; color: var(--muted); margin-top: 4px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .entry .icon { width: 36px; height: 36px; border-radius: 11px; display: grid; place-items: center; flex: none; font-size: 17px; }
+  .icon-btn { border: 0; background: none; cursor: pointer; color: var(--muted); padding: 6px; border-radius: 8px; transition: all .2s; }
+  .icon-btn:hover { background: var(--bg-2); color: var(--text); }
+  .icon-btn svg { width: 16px; height: 16px; display: block; }
+  .entry.done .grow > div:first-child { text-decoration: line-through; color: var(--muted); }
+  .empty { text-align: center; padding: 48px 20px; color: var(--muted); }
+  .empty .em { font-size: 40px; margin-bottom: 8px; animation: bob 3s ease-in-out infinite; }
+  @keyframes bob { 50% { transform: translateY(-8px); } }
+
+  /* ---------- Toast & confetti ---------- */
+  .toast {
+    position: fixed; z-index: 120; left: 50%; bottom: 28px; transform: translate(-50%, 30px); opacity: 0;
+    background: var(--text); color: var(--bg); padding: 12px 18px; border-radius: 14px; font-weight: 600; font-size: 14px;
+    box-shadow: var(--shadow-lg); transition: all .4s var(--spring); pointer-events: none; white-space: nowrap;
+  }
+  .toast.show { transform: translate(-50%, 0); opacity: 1; }
+  #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 110; }
+
+  /* ---------- Settings ---------- */
+  .setting-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+  .setting-row:last-child { border-bottom: 0; }
+  .setting-row .label strong { display: block; } .setting-row .label span { color: var(--muted); font-size: 13px; }
+  .seg { display: inline-flex; background: var(--bg-2); border-radius: 10px; padding: 3px; }
+  .seg button { border: 0; background: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text-2); }
+  .seg button.on { background: var(--surface); color: var(--text); box-shadow: var(--shadow-sm); }
+
+  .section-head { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 18px; flex-wrap: wrap; }
+  .section-head h1 { margin: 0; font: 500 32px/1.15 var(--serif); letter-spacing: -.02em; }
+  .section-head p { margin: 6px 0 0; color: var(--text-2); }
+
+  /* ---------- Bottom nav (mobile) ---------- */
+  .bottom-nav { display: none; }
+
+  @media (max-width: 880px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .topbar { padding: 12px 16px; padding-top: max(12px, env(safe-area-inset-top)); }
+    .topbar h2 { display: none; }
+    .mobile-brand { display: flex; align-items: center; gap: 8px; }
+    .mobile-brand .brand-mark { width: 30px; height: 30px; font-size: 16px; }
+    .content { padding: 18px 16px calc(110px + env(safe-area-inset-bottom)); }
+    .grid-3 { grid-template-columns: 1fr 1fr; }
+    .grid-3 > .streak { grid-column: span 2; }
+    .grid-2, .today, .tasks-cols { grid-template-columns: 1fr; }
+    .today .thumb-wrap { min-height: 0; aspect-ratio: 16/9; order: -1; }
+    .day-inner { grid-template-columns: 1fr; }
+    .hero { padding: 24px; }
+    .section-head h1 { font-size: 26px; }
+    .mini-bar { display: none; }
+    .bottom-nav {
+      display: flex; position: fixed; z-index: 30; left: 12px; right: 12px; bottom: max(12px, env(safe-area-inset-bottom));
+      background: color-mix(in srgb, var(--surface) 88%, transparent); backdrop-filter: blur(16px) saturate(1.4); -webkit-backdrop-filter: blur(16px) saturate(1.4);
+      border: 1px solid var(--line); border-radius: 22px; padding: 6px; box-shadow: var(--shadow-lg); justify-content: space-around;
+    }
+    .bottom-nav button {
+      flex: 1; border: 0; background: none; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 7px 2px;
+      font-size: 10.5px; font-weight: 600; color: var(--muted); border-radius: 16px; cursor: pointer; transition: color .2s, background .2s;
+    }
+    .bottom-nav button svg { width: 21px; height: 21px; transition: transform .3s var(--spring); }
+    .bottom-nav button.active { color: var(--accent); background: var(--accent-soft); }
+    .bottom-nav button.active svg { transform: translateY(-1px) scale(1.08); }
+    .modal { padding: 0; align-items: end; }
+    .modal-box { border-radius: 20px 20px 0 0; }
+  }
+  @media (max-width: 420px) {
+    .switch button { padding: 6px 10px; }
+    .switch .nm { max-width: 58px; overflow: hidden; text-overflow: ellipsis; }
+    .stat { gap: 12px; } .ring { width: 60px; height: 60px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
   }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>Python Together 🐍</h1>
-  <p class="sub">15-day Diwali plan for two brothers. Tick tasks, log what you learned, and plan what's next. Everything saves in this browser.</p>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></symbol>
+  <symbol id="i-plan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M8 2v4M16 2v4M3 10h18M8 15l2 2 4-4"/></symbol>
+  <symbol id="i-video" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="4"/><path d="m10 9 5 3-5 3z" fill="currentColor"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zm0 0A2 2 0 0 0 6 22h13"/><path d="M9 8h6M9 12h4"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></symbol>
+  <symbol id="i-note" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z" fill="currentColor"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17 19 7"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-ext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4 10 14M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+</svg>
 
-  <nav>
-    <button data-tab="plan" class="active">15-Day Tasks</button>
-    <button data-tab="videos">Videos</button>
-    <button data-tab="learned">Learned</button>
-    <button data-tab="todo">To Learn</button>
-    <button data-tab="notes">Plans &amp; Notes</button>
-    <button data-tab="settings">Backup</button>
-  </nav>
-
-  <!-- 15-day plan -->
-  <section id="plan" class="active">
-    <div class="progress">
-      <div class="card me"><strong id="meName">Me</strong> <span class="tag" id="meCount"></span><div class="bar"><div id="meBar"></div></div></div>
-      <div class="card bro"><strong id="broName">Brother</strong> <span class="tag" id="broCount"></span><div class="bar"><div id="broBar"></div></div></div>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><div class="brand-mark">Py</div><div class="brand-name">PyTogether</div></div>
+    <div id="sideNav"></div>
+    <div class="sidebar-foot card" style="padding:14px">
+      <div class="eyebrow" style="margin-bottom:6px">Diwali sprint</div>
+      <div style="font-size:13px;color:var(--text-2)">15 days · 2 learners · 1 goal: understand Python, not just copy it.</div>
     </div>
-    <div id="days"></div>
-  </section>
+  </aside>
 
-  <!-- Videos -->
-  <section id="videos">
-    <div class="card"><strong>How to use these:</strong> watch together, pause often, and type every example yourself. Don't just watch. The links open YouTube search so you always land on the official upload.</div>
-    <div id="videoList"></div>
-  </section>
-
-  <!-- Learned -->
-  <section id="learned">
-    <form class="add" id="learnedForm">
-      <input id="learnedText" placeholder="What did you learn? e.g. for loops go through every item in a list" required>
-      <select id="learnedWho"><option value="me">Me</option><option value="bro">Brother</option><option value="both">Both</option></select>
-      <button class="btn">Add</button>
-    </form>
-    <div class="card"><ul class="list" id="learnedList"></ul></div>
-  </section>
-
-  <!-- To learn -->
-  <section id="todo">
-    <form class="add" id="todoForm">
-      <input id="todoText" placeholder="Something to learn next, e.g. classes and objects" required>
-      <select id="todoWho"><option value="both">Both</option><option value="me">Me</option><option value="bro">Brother</option></select>
-      <button class="btn">Add</button>
-    </form>
-    <div class="card"><ul class="list" id="todoList"></ul></div>
-  </section>
-
-  <!-- Notes -->
-  <section id="notes">
-    <div class="card">
-      <h3 style="margin-top:0">Our plan</h3>
-      <textarea id="planNotes" placeholder="Goals, daily time, project ideas, doubts to ask about..."></textarea>
-      <p class="tag" id="savedHint">Saves automatically.</p>
-    </div>
-    <div class="card">
-      <h3 style="margin-top:0">Daily rules</h3>
-      <ul>
-        <li>60–90 minutes a day, same time every day.</li>
-        <li>Type the code yourself. No copy-paste from AI.</li>
-        <li>If you can't explain a line out loud, you don't move on.</li>
-        <li>Use <a href="https://pythontutor.com" target="_blank" rel="noopener">pythontutor.com</a> to watch your code run step by step.</li>
-        <li>Ask AI for hints and explanations, not full answers.</li>
-        <li>Big brother reviews little brother's code every day. Explaining it teaches you too.</li>
-      </ul>
-    </div>
-  </section>
-
-  <!-- Settings -->
-  <section id="settings">
-    <div class="card">
-      <h3 style="margin-top:0">Names</h3>
-      <div class="row">
-        <input id="nameMe" placeholder="Your name" style="flex:1 1 160px;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--text);font:inherit">
-        <input id="nameBro" placeholder="Brother's name" style="flex:1 1 160px;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--text);font:inherit">
+  <main class="main">
+    <header class="topbar" id="topbar">
+      <div class="mobile-brand"><div class="brand-mark">Py</div><strong class="h-serif" style="font-size:17px">PyTogether</strong></div>
+      <h2 id="viewTitle">Home</h2>
+      <div class="switch" id="learnerSwitch">
+        <span class="pill-bg"></span>
+        <button data-who="me"><span class="dot" style="background:var(--me)"></span><span class="nm" data-name="me">Me</span></button>
+        <button data-who="bro"><span class="dot" style="background:var(--bro)"></span><span class="nm" data-name="bro">Brother</span></button>
       </div>
+    </header>
+
+    <div class="content">
+      <!-- HOME -->
+      <section class="view" id="v-home">
+        <div class="hero">
+          <div class="eyebrow" id="greetEyebrow">Good evening</div>
+          <h1>Let's learn Python, <em id="heroName">together</em>.</h1>
+          <p id="heroSub">Fifteen days, one video and three tasks a day. Tick things off, log what clicked, and keep the streak alive.</p>
+          <div class="hero-actions">
+            <button class="btn accent" data-go="plan"><span id="continueLabel">Continue Day 1</span><svg><use href="#i-arrow"/></svg></button>
+            <button class="btn ghost" data-go="videos"><svg><use href="#i-video"/></svg>Browse videos</button>
+          </div>
+          <div class="typed" id="typed"></div>
+        </div>
+
+        <div class="grid-3 stagger" id="stats"></div>
+
+        <div class="card today stagger" id="todayCard"></div>
+
+        <div class="grid-2" style="margin-top:20px">
+          <div class="card">
+            <div class="section-head" style="margin-bottom:10px"><div><div class="eyebrow">Recently learned</div></div><button class="btn ghost sm" data-go="journal">See all</button></div>
+            <div id="homeLearned"></div>
+          </div>
+          <div class="card">
+            <div class="section-head" style="margin-bottom:10px"><div><div class="eyebrow">Up next to learn</div></div><button class="btn ghost sm" data-go="goals">See all</button></div>
+            <div id="homeGoals"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PLAN -->
+      <section class="view" id="v-plan">
+        <div class="section-head">
+          <div><h1>15-Day Plan</h1><p>Tap a day to open it. Each of you has your own tasks.</p></div>
+          <div class="seg" id="planFilter"><button data-f="all" class="on">All days</button><button data-f="open">Not done</button></div>
+        </div>
+        <div id="planList"></div>
+      </section>
+
+      <!-- VIDEOS -->
+      <section class="view" id="v-videos">
+        <div class="section-head">
+          <div><h1>Video Library</h1><p>Hand-picked courses in Hindi and English. Plays right here in the app.</p></div>
+        </div>
+        <div class="filters" id="vFilters"></div>
+        <div class="vgrid stagger" id="vGrid"></div>
+      </section>
+
+      <!-- JOURNAL -->
+      <section class="view" id="v-journal">
+        <div class="section-head"><div><h1>What We Learned</h1><p>Write it in your own words. If you can explain it, you know it.</p></div></div>
+        <form class="composer" id="learnedForm">
+          <input class="field" id="learnedText" placeholder="e.g. A dict is like a JSON object: keys map to values" autocomplete="off" required>
+          <select class="field" id="learnedWho"><option value="me">Me</option><option value="bro">Brother</option><option value="both">Both</option></select>
+          <button class="btn accent"><svg><use href="#i-plus"/></svg>Add</button>
+        </form>
+        <div class="feed" id="learnedFeed"></div>
+      </section>
+
+      <!-- GOALS -->
+      <section class="view" id="v-goals">
+        <div class="section-head"><div><h1>Going to Learn</h1><p>Topics and ideas for later. Tick them off when you get there.</p></div></div>
+        <form class="composer" id="goalForm">
+          <input class="field" id="goalText" placeholder="e.g. Build a Discord bot in Python" autocomplete="off" required>
+          <select class="field" id="goalWho"><option value="both">Both</option><option value="me">Me</option><option value="bro">Brother</option></select>
+          <button class="btn accent"><svg><use href="#i-plus"/></svg>Add</button>
+        </form>
+        <div class="feed" id="goalFeed"></div>
+      </section>
+
+      <!-- NOTES -->
+      <section class="view" id="v-notes">
+        <div class="section-head"><div><h1>Plans &amp; Notes</h1><p>Goals, doubts, project ideas. Saves as you type.</p></div><span class="chip good" id="savedChip" style="opacity:0;transition:opacity .3s">Saved ✓</span></div>
+        <div class="grid-2">
+          <div class="card"><div class="eyebrow" style="margin-bottom:10px">Our plan</div><textarea class="field" id="planNotes" placeholder="What do we want to build by the end of the holidays?&#10;&#10;Doubts to ask:&#10;- "></textarea></div>
+          <div class="card">
+            <div class="eyebrow" style="margin-bottom:10px">House rules</div>
+            <div class="feed stagger" id="rules"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section class="view" id="v-settings">
+        <div class="section-head"><div><h1>Settings</h1><p>Names, theme and backups.</p></div></div>
+        <div class="card">
+          <div class="setting-row"><div class="label"><strong>Your name</strong><span>The big brother</span></div><input class="field" id="nameMe" style="max-width:240px" placeholder="Me"></div>
+          <div class="setting-row"><div class="label"><strong>Brother's name</strong><span>The beginner</span></div><input class="field" id="nameBro" style="max-width:240px" placeholder="Brother"></div>
+          <div class="setting-row"><div class="label"><strong>Start date</strong><span>Day 1 of the plan. Used for the "today" card.</span></div><input class="field" type="date" id="startDate" style="max-width:240px"></div>
+          <div class="setting-row"><div class="label"><strong>Theme</strong><span>Follows your device by default</span></div><div class="seg" id="themeSeg"><button data-t="auto">Auto</button><button data-t="light">Light</button><button data-t="dark">Dark</button></div></div>
+          <div class="setting-row"><div class="label"><strong>Backup</strong><span>Progress is saved in this browser. Export to keep it safe or move devices.</span></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm" id="exportBtn">Export</button><label class="btn ghost sm" style="cursor:pointer">Import<input type="file" id="importFile" accept="application/json" hidden></label></div></div>
+          <div class="setting-row"><div class="label"><strong>Install as app</strong><span id="installHint">On phone: browser menu → "Add to Home screen".</span></div><button class="btn ghost sm" id="installBtn" hidden>Install</button></div>
+          <div class="setting-row"><div class="label"><strong style="color:#c0392b">Reset everything</strong><span>Deletes all ticks, notes and lists.</span></div><button class="btn ghost sm" id="resetBtn">Reset</button></div>
+        </div>
+      </section>
     </div>
-    <div class="card">
-      <h3 style="margin-top:0">Backup your progress</h3>
-      <p class="tag">Progress lives in this browser only. Export a file now and then so you don't lose it, or to move it to another device.</p>
-      <div class="row">
-        <button class="btn" id="exportBtn">Export file</button>
-        <label class="btn ghost">Import file <input type="file" id="importFile" accept="application/json" hidden></label>
-        <button class="btn ghost" id="resetBtn">Reset everything</button>
-      </div>
-    </div>
-  </section>
+  </main>
 </div>
 
+<nav class="bottom-nav" id="bottomNav"></nav>
+
+<div class="modal" id="modal" aria-hidden="true">
+  <div class="modal-box" role="dialog" aria-modal="true">
+    <div class="player" id="player"></div>
+    <div class="modal-foot">
+      <div><h3 id="mTitle"></h3><div class="channel" id="mChannel"></div></div>
+      <div class="modal-actions">
+        <button class="btn sm accent" id="mWatched"></button>
+        <a class="btn ghost sm" id="mYT" target="_blank" rel="noopener"><svg><use href="#i-ext"/></svg>YouTube</a>
+        <button class="btn ghost sm" id="mClose"><svg><use href="#i-x"/></svg></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<canvas id="confetti"></canvas>
+
 <script>
-const yt = q => "https://www.youtube.com/results?search_query=" + encodeURIComponent(q);
+/* ================= Data ================= */
+const CHANNELS = {
+  harry:  { name: "CodeWithHarry",       color: "#7b3fe4", ini: "CH" },
+  apna:   { name: "Apna College",        color: "#e8453c", ini: "AC" },
+  mosh:   { name: "Programming with Mosh", color: "#2f80ed", ini: "PM" },
+  cs50:   { name: "CS50 · Harvard",      color: "#a51c30", ini: "CS" },
+  fcc:    { name: "freeCodeCamp",        color: "#0a0a23", ini: "fC" },
+  corey:  { name: "Corey Schafer",       color: "#3a7d44", ini: "CS" },
+};
 
 const VIDEOS = [
-  { title: "CS50's Introduction to Programming with Python (CS50P)", who: "Main course — both",
-    desc: "Harvard's free full course by David Malan. Lectures 0–9: functions, conditionals, loops, exceptions, libraries, files, regex, OOP. The backbone of this plan.",
-    q: "CS50P 2022 Harvard Introduction to Programming with Python full course" },
-  { title: "Python Tutorial for Beginners — Programming with Mosh", who: "Brother's first video",
-    desc: "Short, very clear intro. Great for day 1 if you've never coded.",
-    q: "Programming with Mosh Python tutorial for beginners" },
-  { title: "Python for Beginners — Full Course (freeCodeCamp)", who: "Extra practice",
-    desc: "Long single video. Use it when a CS50P topic didn't click and you want another explanation.",
-    q: "freeCodeCamp Python full course for beginners" },
-  { title: "Corey Schafer — Python Tutorials playlist", who: "Me (deeper)",
-    desc: "Clean explanations of specific topics: dictionaries, functions, files, JSON, virtual environments, requests.",
-    q: "Corey Schafer Python tutorial beginner playlist" },
-  { title: "Corey Schafer — Flask Tutorials", who: "Me (days 10–12)",
-    desc: "Build a real website with Python. Uses your HTML/CSS skills directly.",
-    q: "Corey Schafer Flask tutorial part 1" },
-  { title: "Python SQLite tutorial", who: "Me (day 9)",
-    desc: "Using the built-in sqlite3 module. You already know databases, so this is fast.",
-    q: "Corey Schafer Python SQLite tutorial" },
+  { id: "ihk_Xglr164", ch: "harry", lang: "Hindi", level: "Beginner", for: "both",
+    title: "Python Tutorial In Hindi — Learn Python in One Video",
+    desc: "Harry's one-shot course with timestamps. The best first watch in Hindi." },
+  { id: "ERCMXc8x7mc", ch: "apna", lang: "Hindi", level: "Beginner", for: "both",
+    title: "Python Tutorial for Beginners — Full Course (with Notes & Practice Questions)",
+    desc: "Shradha's full course. Comes with notes and practice questions after each topic." },
+  { id: "fr1f84rg4Nw", ch: "harry", lang: "Hindi", level: "Beginner", for: "bro",
+    title: "15 Minute Python Crash Course in Hindi",
+    desc: "A quick taste of Python before the big course. Perfect for Day 1." },
+  { id: "bfSHM-vx5lA", ch: "harry", lang: "Hindi", level: "Beginner", for: "bro",
+    title: "Writing Our First Python Program — Python Course for Absolute Beginners",
+    desc: "Part of Harry's step-by-step series. Small videos, one concept each." },
+  { id: "qVyvmzFxF_o", ch: "apna", lang: "Hindi", level: "Beginner", for: "both",
+    title: "Lecture 3: List & Tuple in Python",
+    desc: "Apna College's lecture on lists and tuples, with practice questions." },
+  { id: "kqtD5dpn9C8", ch: "mosh", lang: "English", level: "Beginner", for: "bro",
+    title: "Python for Beginners — Learn Coding with Python in 1 Hour",
+    desc: "Very clear and calm. Variables, strings, conditionals, loops, lists." },
+  { id: "_uQrJ0TkZlc", ch: "mosh", lang: "English", level: "Beginner", for: "me",
+    title: "Python Full Course for Beginners",
+    desc: "Mosh's longer course with chapters. Good second explanation for any topic." },
+  { id: "yVl_G-F7m8c", ch: "mosh", lang: "English", level: "Projects", for: "both",
+    title: "Python Projects for Beginners",
+    desc: "Dice game, number guessing, rock-paper-scissors, QR code generator." },
+  { id: "nLRL_NcnK-4", ch: "fcc", lang: "English", level: "Course", for: "me",
+    title: "Harvard CS50's Introduction to Programming with Python — Full Course",
+    desc: "The whole CS50P course in one video. Deep and well taught.",
+    playlist: "PLhQjrBD2T3817j24-GogXmWqO5Q5vYy0V" },
+  { id: "pd-0G0MigUA", ch: "corey", lang: "English", level: "Intermediate", for: "me",
+    title: "Python SQLite Tutorial: Database, Tables and Queries",
+    desc: "The built-in sqlite3 module. You know databases, so this goes fast." },
+  { id: "MwZwr5Tvyxo", ch: "corey", lang: "English", level: "Web", for: "me",
+    title: "Python Flask Tutorial Part 1 — Getting Started",
+    desc: "Your first Python website. Uses your HTML/CSS skills directly.",
+    playlist: "PL-osiE80TeTs4UjLw5MM6OjgkjFeUxCYH" },
+  { id: "QnDWIZuWYW0", ch: "corey", lang: "English", level: "Web", for: "me",
+    title: "Python Flask Tutorial Part 2 — Templates",
+    desc: "Reuse your HTML with templates across pages." },
 ];
+const V = Object.fromEntries(VIDEOS.map(v => [v.id, v]));
 
-// Each day: title, what to watch, tasks for me, tasks for brother
 const DAYS = [
-  { t: "Setup + first program", watch: "Mosh beginner video (first hour) or CS50P Lecture 0 (first half)",
-    me: ["Install Python and VS Code (with Python extension)", "Run print('Hello') from a .py file and the terminal", "Learn variables, str, int, float, input()"],
-    bro: ["Install Python and VS Code with big brother", "Write a program that asks your name and says hi", "Make a program that adds two numbers you type in"] },
-  { t: "Functions", watch: "CS50P Lecture 0 (second half)",
-    me: ["Write 3 functions with parameters and return values", "Learn f-strings, .strip(), .title(), round()", "Make a tip calculator using functions"],
-    bro: ["Understand what def and return do (explain it out loud)", "Write a function that squares a number", "Make an 'einstein' program: E = m × c²"] },
-  { t: "Conditionals", watch: "CS50P Lecture 1",
-    me: ["if / elif / else, and / or, match", "Grade calculator (marks → A/B/C/F)", "Write a function is_even(n) returning True/False"],
-    bro: ["Write a program: is the number positive, negative, or zero?", "Make a simple password checker", "Explain your code to big brother"] },
-  { t: "Loops", watch: "CS50P Lecture 2 (first half)",
-    me: ["while, for, range(), break, continue", "Print a multiplication table for any number", "Draw a square of # with nested loops"],
-    bro: ["Count 1 to 10 with a for loop, then a while loop", "Guess-the-number game (use random.randint)", "Add a 'tries left' counter to the game"] },
-  { t: "Lists + dictionaries (= JSON!)", watch: "CS50P Lecture 2 (second half)",
-    me: ["Lists: append, remove, slicing, loop over them", "Dicts: compare to JSON objects you already know", "List of dicts: students with name + marks, print the topper"],
-    bro: ["Make a list of 5 favourite games, print each one", "Make a dict: word → meaning (mini dictionary)", "Ask the user for a word, show its meaning"] },
-  { t: "Errors + exceptions", watch: "CS50P Lecture 3",
-    me: ["try / except / else, ValueError, KeyError", "Make input() that keeps asking until you type a valid number", "Read 5 error messages on purpose and understand each"],
-    bro: ["Break your guess game on purpose, read the error", "Fix it with try / except", "Review week 1 — redo any task that felt hard"] },
-  { t: "Libraries + pip", watch: "CS50P Lecture 4",
-    me: ["import random, statistics, sys", "pip install requests; fetch JSON from a free API", "Make a program that prints a random joke or quote from an API"],
-    bro: ["Rock-paper-scissors vs computer using random", "Keep score for best of 5", "Show it to big brother"] },
-  { t: "Mini project day", watch: "No new video — build!",
-    me: ["Build a weather or currency checker using an API", "Split code into clean functions", "Write a short README explaining it"],
-    bro: ["Build a quiz game: 5 questions, score at the end", "Store questions in a list of dicts", "Big brother reviews the code"] },
-  { t: "Files + JSON + SQLite", watch: "CS50P Lecture 6 + SQLite video",
-    me: ["Read and write .txt and .csv files", "json.load / json.dump — save and load data", "sqlite3: create a table, insert, select (your DB skills!)"],
-    bro: ["Save quiz high scores to a text file", "Load and show the high score when the game starts", "Explain what open() and 'with' do"] },
-  { t: "Flask: first web page", watch: "Corey Schafer Flask part 1–2",
-    me: ["Install Flask, run hello world on localhost", "Use templates with your own HTML/CSS", "Add 2 pages with links between them"],
-    bro: ["Start a terminal to-do list: add / show / remove tasks", "Use a list and a while loop menu", "Keep it running until user types 'quit'"] },
-  { t: "Flask: forms + database", watch: "Corey Schafer Flask part 3–4",
-    me: ["Add an HTML form and handle POST in Flask", "Save form data into SQLite", "Show saved data on a page"],
-    bro: ["Save the to-do list to a file so it remembers tasks", "Add 'mark as done'", "Handle wrong input without crashing"] },
-  { t: "Classes (OOP basics)", watch: "CS50P Lecture 8",
-    me: ["class, __init__, self, methods", "Rewrite your student list using a Student class", "Understand why classes are useful (explain to brother)"],
-    bro: ["Watch the first half with big brother", "Make a simple Pet class with name and speak()", "Make 2 pets and make them speak"] },
-  { t: "Final project — build", watch: "None — build!",
-    me: ["Pick: Flask app (to-do, notes, quiz site) with SQLite", "Build the core feature", "Commit to GitHub"],
-    bro: ["Pick: text adventure, quiz, or upgraded guessing game", "Build the core feature", "Ask for help only after trying 15 minutes"] },
-  { t: "Final project — finish", watch: "None",
-    me: ["Finish features, fix bugs", "Clean up code: good names, small functions", "Write a README"],
-    bro: ["Finish and test your project", "Add one extra feature you thought of yourself", "Write 3 lines about what it does"] },
-  { t: "Demo day + review", watch: "Rewatch any lecture that felt weak",
-    me: ["Demo your project to brother", "Read brother's code and explain it line by line", "Write the next month's plan in Plans & Notes"],
-    bro: ["Demo your project to big brother", "Explain your code line by line", "Add 3 things to 'To Learn' for next month"] },
+  { t: "Setup + your first program", topic: "print, variables, input", v: "fr1f84rg4Nw", note: "Then start Harry's one-shot (first part).",
+    me: ["Install Python + VS Code (with the Python extension)", "Run a .py file from the terminal", "Learn str, int, float and input()"],
+    bro: ["Install Python + VS Code with big brother", "Make a program that asks your name and says hi", "Make a program that adds two numbers you type"] },
+  { t: "Variables, strings, operators", topic: "f-strings, math, type()", v: "ihk_Xglr164", note: "Continue Harry's one-shot: variables → strings.",
+    me: ["Use f-strings, .strip(), .title(), .replace()", "Make a tip calculator", "Explain int vs float vs str out loud"],
+    bro: ["Make an age-in-days calculator", "Print your name 10 times using *", "Show big brother and explain each line"] },
+  { t: "Conditionals", topic: "if, elif, else, and, or", v: "ERCMXc8x7mc", note: "Apna College: the conditional statements part.",
+    me: ["Grade calculator: marks → A/B/C/F", "Use match-case once", "Write is_even(n) returning True/False"],
+    bro: ["Is the number positive, negative or zero?", "Make a simple password checker", "Make a 'can I vote?' age checker"] },
+  { t: "Loops", topic: "for, while, range, break", v: "kqtD5dpn9C8", note: "Mosh's 1-hour video: the loops section.",
+    me: ["Multiplication table for any number", "Draw a square of # with nested loops", "Sum of numbers 1 to n with while"],
+    bro: ["Count 1 to 10 with for, then with while", "Guess-the-number game (random.randint)", "Add a 'tries left' counter"] },
+  { t: "Lists & tuples", topic: "append, slicing, loops over lists", v: "qVyvmzFxF_o", note: "Do the practice questions at the end too.",
+    me: ["append, remove, sort, slicing", "Find the largest number without max()", "Remove duplicates from a list"],
+    bro: ["List of your 5 favourite games, print each", "Add and remove a game from the list", "Print the list in reverse"] },
+  { t: "Dictionaries (= JSON!)", topic: "keys, values, nested data", v: "ERCMXc8x7mc", note: "Apna College: the dictionary & set part.",
+    me: ["Compare dicts to JSON objects you already know", "List of dicts: students → print the topper", "Count letters in a word with a dict"],
+    bro: ["Mini dictionary: word → meaning", "Ask for a word, show its meaning", "Say 'not found' if the word is missing"] },
+  { t: "Functions", topic: "def, return, parameters", v: "ihk_Xglr164", note: "Harry's one-shot: the functions part.",
+    me: ["Write 3 functions with return values", "Refactor your tip calculator into functions", "Learn default args and *args"],
+    bro: ["Write a function that squares a number", "Write greet(name)", "Explain def vs return to big brother"] },
+  { t: "Mini project day", topic: "build something real", v: "yVl_G-F7m8c", note: "Watch one project, then build your own version.",
+    me: ["Rock-paper-scissors with score, best of 5", "Split it into clean functions", "Write a short README"],
+    bro: ["Quiz game: 5 questions, score at the end", "Store questions in a list of dicts", "Big brother reviews your code"] },
+  { t: "Errors & files", topic: "try/except, open(), json", v: "_uQrJ0TkZlc", note: "Mosh full course: exceptions + files chapters.",
+    me: ["try / except / else for bad input", "json.dump and json.load to save data", "Read and write a .csv file"],
+    bro: ["Break your quiz game on purpose, read the error", "Fix it with try / except", "Save the high score to a text file"] },
+  { t: "Libraries & APIs", topic: "pip, requests, modules", v: "nLRL_NcnK-4", note: "CS50P: the Libraries lecture (use the chapters).",
+    me: ["pip install requests", "Fetch JSON from a free API and print it", "Make a random joke or quote app"],
+    bro: ["Use random and math modules", "Dice roller: roll two dice, show the total", "Add 'roll again? y/n'"] },
+  { t: "Databases with SQLite", topic: "sqlite3, CRUD", v: "pd-0G0MigUA", note: "Your DB knowledge makes this quick.",
+    me: ["Create a table and insert rows from Python", "SELECT, UPDATE, DELETE", "Build a tiny contacts manager"],
+    bro: ["Terminal to-do list: add / show / remove", "Use a while loop menu", "Stop when the user types 'quit'"] },
+  { t: "Flask: your first website", topic: "routes, templates", v: "MwZwr5Tvyxo", note: "Then Part 2 (templates) from the library.",
+    me: ["Install Flask, run hello world", "Use templates with your own HTML/CSS", "Make 2 pages that link to each other"],
+    bro: ["Save the to-do list to a file", "Add 'mark as done'", "Handle wrong input without crashing"] },
+  { t: "Classes (OOP basics)", topic: "class, __init__, self", v: "nLRL_NcnK-4", note: "CS50P: the Object-Oriented Programming lecture.",
+    me: ["Write a Student class with methods", "Rewrite your contacts app using a class", "Teach brother why classes are useful"],
+    bro: ["Watch the first half with big brother", "Make a Pet class with name and speak()", "Make 2 pets and make them speak"] },
+  { t: "Final project — build", topic: "your own idea", v: "yVl_G-F7m8c", note: "No new topic. Build!",
+    me: ["Flask + SQLite app (notes, quiz or to-do site)", "Build the main feature", "Push it to GitHub"],
+    bro: ["Text adventure, quiz or upgraded game", "Build the main feature", "Try 15 minutes before asking for help"] },
+  { t: "Demo day 🎉", topic: "show, explain, plan next", v: "ihk_Xglr164", note: "Rewatch any part that still feels weak.",
+    me: ["Demo your project to brother", "Read brother's code, explain it line by line", "Write next month's plan in Notes"],
+    bro: ["Demo your project to big brother", "Explain your code line by line", "Add 3 topics to 'Going to Learn'"] },
 ];
 
-const KEY = "python-together-v1";
-const defaults = () => ({ checks: {}, learned: [], todo: [], notes: "", names: { me: "", bro: "" } });
-let state = defaults();
-try { const raw = localStorage.getItem(KEY); if (raw) state = Object.assign(defaults(), JSON.parse(raw)); } catch (e) {}
-function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+const RULES = [
+  ["⏰", "60–90 minutes a day, same time every day."],
+  ["⌨️", "Type the code yourself. No copy-paste from AI."],
+  ["🗣️", "Can't explain a line out loud? Don't move on yet."],
+  ["🔍", "Watch code run step by step on pythontutor.com."],
+  ["💡", "Ask AI for hints and explanations, not full answers."],
+  ["🤝", "Big brother reviews little brother's code every day."],
+];
+const SNIPPETS = [
+  'print("Hello, Diwali!")',
+  'for day in range(1, 16): learn(day)',
+  'skills = {"html": True, "python": "loading..."}',
+  'def explain(line): return "in my own words"',
+  'while not understood: ask(why)',
+];
 
+const TABS = [
+  ["home", "Home", "i-home"], ["plan", "Plan", "i-plan"], ["videos", "Videos", "i-video"],
+  ["journal", "Learned", "i-book"], ["goals", "To Learn", "i-target"], ["notes", "Notes", "i-note"], ["settings", "Settings", "i-gear"],
+];
+
+/* ================= State ================= */
+const KEY = "pytogether-v2";
+const today0 = () => { const d = new Date(); d.setHours(0,0,0,0); return d; };
+const iso = d => d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+const defaults = () => ({ checks: {}, watched: {}, learned: [], goals: [], notes: "", names: { me: "", bro: "" },
+  who: "me", tab: "home", theme: "auto", start: iso(today0()), activity: {} });
+let S = defaults();
+try {
+  const raw = localStorage.getItem(KEY);
+  if (raw) S = Object.assign(defaults(), JSON.parse(raw));
+  else { // carry over ticks from the first version of this page
+    const old = JSON.parse(localStorage.getItem("python-together-v1") || "null");
+    if (old) Object.assign(S, { learned: (old.learned||[]).map(x=>({ ...x, ts: Date.now() })), goals: (old.todo||[]).map(x=>({ ...x, ts: Date.now() })), notes: old.notes||"", names: old.names||S.names });
+  }
+} catch (e) {}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+
+/* ================= Helpers ================= */
 const $ = s => document.querySelector(s);
-const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const names = () => ({ me: state.names.me || "Me", bro: state.names.bro || "Brother", both: "Both" });
+const $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const nm = w => w === "both" ? "Both" : (S.names[w] || (w === "me" ? "Me" : "Brother"));
+const thumb = (id, q = "hqdefault") => `https://i.ytimg.com/vi/${id}/${q}.jpg`;
+const ytUrl = v => v.playlist ? `https://www.youtube.com/watch?v=${v.id}&list=${v.playlist}` : `https://www.youtube.com/watch?v=${v.id}`;
+const thumbImg = (id, alt) => `<img loading="lazy" src="${thumb(id)}" alt="${esc(alt)}" onerror="this.style.opacity=0">`;
+const taskId = (d, w, j) => `${d}-${w}-${j}`;
+const dayProgress = (d, w) => { const t = DAYS[d][w]; return t.filter((_, j) => S.checks[taskId(d, w, j)]).length / t.length; };
+const dayDone = d => dayProgress(d, "me") === 1 && dayProgress(d, "bro") === 1;
+const personTotals = w => { let done = 0, all = 0; DAYS.forEach((d, i) => d[w].forEach((_, j) => { all++; if (S.checks[taskId(i, w, j)]) done++; })); return { done, all }; };
+const currentDay = () => { const i = DAYS.findIndex((_, d) => dayProgress(d, S.who) < 1); return i === -1 ? DAYS.length - 1 : i; };
+const calendarDay = () => { const s = new Date(S.start + "T00:00"); const n = Math.floor((today0() - s) / 864e5); return Math.max(0, Math.min(DAYS.length - 1, n)); };
+function streak() {
+  let n = 0; const d = today0();
+  if (!S.activity[iso(d)]) d.setDate(d.getDate() - 1);
+  while (S.activity[iso(d)]) { n++; d.setDate(d.getDate() - 1); }
+  return n;
+}
+const markActive = () => { S.activity[iso(today0())] = true; };
+function timeAgo(ts) {
+  if (!ts) return ""; const s = (Date.now() - ts) / 1000;
+  if (s < 60) return "just now"; if (s < 3600) return Math.floor(s/60) + "m ago";
+  if (s < 86400) return Math.floor(s/3600) + "h ago"; const d = Math.floor(s/86400); return d === 1 ? "yesterday" : d + " days ago";
+}
 
-// Tabs
-document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
-  document.querySelectorAll("nav button").forEach(x => x.classList.toggle("active", x === b));
-  document.querySelectorAll("section").forEach(s => s.classList.toggle("active", s.id === b.dataset.tab));
-  try { localStorage.setItem(KEY + "-tab", b.dataset.tab); } catch (e) {}
+let toastT;
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), 2200); }
+
+/* ================= Confetti ================= */
+const cv = $("#confetti"), cx = cv.getContext("2d"); let parts = [], raf;
+function resize() { cv.width = innerWidth * devicePixelRatio; cv.height = innerHeight * devicePixelRatio; cx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0); }
+addEventListener("resize", resize); resize();
+function confetti(x = innerWidth / 2, y = innerHeight / 3, n = 140) {
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const cs = getComputedStyle(document.documentElement);
+  const cols = ["--accent", "--bro", "--good", "--gold"].map(v => cs.getPropertyValue(v).trim());
+  for (let i = 0; i < n; i++) parts.push({ x, y, vx: (Math.random() - .5) * 14, vy: Math.random() * -14 - 3, g: .38, s: Math.random() * 7 + 4,
+    r: Math.random() * 6, vr: (Math.random() - .5) * .3, c: cols[i % cols.length], life: 120 + Math.random() * 60 });
+  if (!raf) tick();
+}
+function tick() {
+  cx.clearRect(0, 0, innerWidth, innerHeight);
+  parts = parts.filter(p => p.life-- > 0 && p.y < innerHeight + 20);
+  parts.forEach(p => { p.vy += p.g; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.r += p.vr;
+    cx.save(); cx.translate(p.x, p.y); cx.rotate(p.r); cx.fillStyle = p.c; cx.globalAlpha = Math.min(1, p.life / 40);
+    cx.fillRect(-p.s/2, -p.s/4, p.s, p.s/2); cx.restore(); });
+  raf = parts.length ? requestAnimationFrame(tick) : (cx.clearRect(0, 0, innerWidth, innerHeight), null);
+}
+
+/* ================= Navigation ================= */
+function navHTML() { return TABS.map(([id, label, ic]) => `<button class="nav-item" data-tab="${id}"><svg><use href="#${ic}"/></svg>${label}</button>`).join(""); }
+$("#sideNav").innerHTML = navHTML();
+$("#bottomNav").innerHTML = TABS.filter(t => t[0] !== "settings" && t[0] !== "notes").map(([id, label, ic]) => `<button data-tab="${id}"><svg><use href="#${ic}"/></svg>${label}</button>`).join("")
+  + `<button data-tab="settings"><svg><use href="#i-gear"/></svg>More</button>`;
+function go(tab) {
+  if (!TABS.some(t => t[0] === tab)) tab = "home";
+  S.tab = tab; save();
+  $$(".view").forEach(v => v.classList.toggle("active", v.id === "v-" + tab));
+  $$("[data-tab]").forEach(b => b.classList.toggle("active", b.dataset.tab === tab || (tab === "notes" && b.dataset.tab === "settings" && b.closest("#bottomNav"))));
+  $("#viewTitle").textContent = TABS.find(t => t[0] === tab)[1];
+  render(tab);
+  scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
+}
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-tab],[data-go]"); if (t) go(t.dataset.tab || t.dataset.go);
+  const b = e.target.closest(".btn"); if (b) { const r = b.getBoundingClientRect(), s = Math.max(r.width, r.height);
+    const sp = document.createElement("span"); sp.className = "ripple"; sp.style.cssText = `width:${s}px;height:${s}px;left:${e.clientX - r.left - s/2}px;top:${e.clientY - r.top - s/2}px`;
+    b.appendChild(sp); setTimeout(() => sp.remove(), 600); }
 });
-try { const t = localStorage.getItem(KEY + "-tab"); if (t) document.querySelector(`nav button[data-tab="${t}"]`)?.click(); } catch (e) {}
+addEventListener("scroll", () => $("#topbar").classList.toggle("scrolled", scrollY > 4), { passive: true });
 
-// Plan
-function renderDays() {
-  const n = names();
-  $("#days").innerHTML = DAYS.map((d, i) => {
-    const col = who => d[who].map((task, j) => {
-      const id = `${i}-${who}-${j}`, on = !!state.checks[id];
-      return `<label class="task ${on ? "checked" : ""}"><input type="checkbox" data-id="${id}" ${on ? "checked" : ""}><span>${esc(task)}</span></label>`;
-    }).join("");
-    const all = ["me", "bro"].every(w => d[w].every((_, j) => state.checks[`${i}-${w}-${j}`]));
-    return `<div class="card">
-      <div class="day-head"><h3>Day ${i + 1} · ${esc(d.t)}</h3>${all ? '<span class="day-done">✓ Day complete</span>' : ""}</div>
-      <div class="watch">▶ <strong>Watch:</strong> ${esc(d.watch)}</div>
-      <div class="cols"><div class="me"><h4>${esc(n.me)}</h4>${col("me")}</div><div class="bro"><h4>${esc(n.bro)}</h4>${col("bro")}</div></div>
-    </div>`;
-  }).join("");
-  $("#days").querySelectorAll("input[type=checkbox]").forEach(cb => cb.onchange = () => {
-    state.checks[cb.dataset.id] = cb.checked; save(); renderDays();
+/* Learner switch */
+function paintSwitch() {
+  const on = $(`#learnerSwitch button[data-who="${S.who}"]`);
+  $$("#learnerSwitch button").forEach(b => b.classList.toggle("on", b === on));
+  const bg = $("#learnerSwitch .pill-bg"); bg.style.left = on.offsetLeft + "px"; bg.style.width = on.offsetWidth + "px";
+  $$("[data-name]").forEach(el => el.textContent = nm(el.dataset.name));
+}
+$$("#learnerSwitch button").forEach(b => b.onclick = () => { S.who = b.dataset.who; save(); paintSwitch(); render(S.tab); toast(`Switched to ${nm(S.who)}`); });
+
+/* ================= Renderers ================= */
+function ring(pct, color) {
+  const r = 30, c = 2 * Math.PI * r;
+  return `<div class="ring"><svg viewBox="0 0 74 74"><circle class="track" cx="37" cy="37" r="${r}"/><circle class="fill" cx="37" cy="37" r="${r}" stroke="${color}" stroke-dasharray="${c}" stroke-dashoffset="${c}" data-off="${c * (1 - pct)}"/></svg><div class="label">${Math.round(pct * 100)}%</div></div>`;
+}
+const animateRings = root => requestAnimationFrame(() => requestAnimationFrame(() => root.querySelectorAll(".ring .fill").forEach(f => f.style.strokeDashoffset = f.dataset.off)));
+function playThumb(id, cls = "") { const v = V[id]; return `${thumbImg(id, v.title)}<div class="play"><svg><use href="#i-play"/></svg></div>`; }
+function avatar(ch) { const c = CHANNELS[ch]; return `<span class="avatar" style="background:${c.color}">${c.ini}</span>`; }
+
+function renderHome() {
+  const h = new Date().getHours();
+  $("#greetEyebrow").textContent = (h < 5 ? "Late night grind" : h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening") + " · Day " + (calendarDay() + 1) + " of 15";
+  $("#heroName").textContent = S.names.me && S.names.bro ? `${S.names.me} & ${S.names.bro}` : "together";
+  const cd = currentDay();
+  $("#continueLabel").textContent = personTotals(S.who).done === personTotals(S.who).all ? "Plan complete — review" : `Continue Day ${cd + 1}`;
+
+  const me = personTotals("me"), bro = personTotals("bro"), daysDone = DAYS.filter((_, i) => dayDone(i)).length, st = streak();
+  $("#stats").innerHTML = `
+    <div class="card lift stat">${ring(me.done / me.all, "var(--me)")}<div><div class="name">${esc(nm("me"))}</div><div class="sub">${me.done} of ${me.all} tasks</div></div></div>
+    <div class="card lift stat">${ring(bro.done / bro.all, "var(--bro)")}<div><div class="name">${esc(nm("bro"))}</div><div class="sub">${bro.done} of ${bro.all} tasks</div></div></div>
+    <div class="card lift stat streak"><div style="font-size:40px" class="${st ? "flame" : ""}">${st ? "🔥" : "🪔"}</div><div><div class="big-num">${st} <span style="font-size:16px;font-family:var(--sans);color:var(--muted)">day streak</span></div><div class="sub">${daysDone} of 15 days fully done</div></div></div>`;
+  animateRings($("#stats"));
+
+  const d = DAYS[cd], v = V[d.v];
+  $("#todayCard").innerHTML = `
+    <div class="left">
+      <div class="eyebrow" style="color:var(--accent)">${S.who === "me" && !S.names.me ? "Your" : esc(nm(S.who)) + "'s"} next · Day ${cd + 1}</div>
+      <h3>${esc(d.t)}</h3>
+      <ul class="mini-tasks">${d[S.who].map((t, j) => taskHTML(cd, S.who, j, t)).join("")}</ul>
+      <button class="btn sm ghost" data-go="plan">Open full plan<svg><use href="#i-arrow"/></svg></button>
+    </div>
+    <div class="thumb thumb-wrap" data-play="${v.id}">${playThumb(v.id)}<div class="badge-tl"><span>${esc(CHANNELS[v.ch].name)}</span><span>${v.lang}</span></div></div>`;
+  bindTasks($("#todayCard"));
+
+  const L = S.learned.slice(0, 3), G = S.goals.filter(g => !g.done).slice(0, 3);
+  $("#homeLearned").innerHTML = L.length ? L.map(x => `<div class="task" style="cursor:default"><span>✨</span><span class="t">${esc(x.text)} <span style="color:var(--muted);font-size:12px">· ${esc(nm(x.who))}</span></span></div>`).join("") : `<div style="color:var(--muted);font-size:14px;padding:8px 0">Nothing yet. Learned something today? Write it down.</div>`;
+  $("#homeGoals").innerHTML = G.length ? G.map(x => `<div class="task" style="cursor:default"><span>🎯</span><span class="t">${esc(x.text)}</span></div>`).join("") : `<div style="color:var(--muted);font-size:14px;padding:8px 0">Add topics you want to learn after the 15 days.</div>`;
+}
+
+let typedI = 0, typedTimer;
+function typeLoop() {
+  const el = $("#typed"), text = SNIPPETS[typedI % SNIPPETS.length]; let k = 0; clearTimeout(typedTimer);
+  const step = () => { el.innerHTML = ">>> " + esc(text.slice(0, k)) + '<span class="caret"></span>';
+    if (k++ < text.length) typedTimer = setTimeout(step, 45 + Math.random() * 40); else { typedI++; typedTimer = setTimeout(typeLoop, 2400); } };
+  step();
+}
+
+function taskHTML(d, w, j, text) {
+  const id = taskId(d, w, j), on = !!S.checks[id];
+  return `<li style="list-style:none"><label class="task"><input type="checkbox" data-id="${id}" ${on ? "checked" : ""}><span class="box"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg></span><span class="t">${esc(text)}</span></label></li>`;
+}
+function bindTasks(root) {
+  root.querySelectorAll('input[type=checkbox][data-id]').forEach(cb => cb.onchange = e => {
+    const [d, w] = cb.dataset.id.split("-"); const before = dayProgress(+d, w), wasDay = dayDone(+d);
+    S.checks[cb.dataset.id] = cb.checked; if (cb.checked) markActive(); save();
+    const r = cb.closest(".task").getBoundingClientRect();
+    if (cb.checked && dayDone(+d) && !wasDay) { confetti(innerWidth / 2, innerHeight / 3, 220); toast(`🎉 Day ${+d + 1} complete for both of you!`); }
+    else if (cb.checked && dayProgress(+d, w) === 1 && before < 1) { confetti(r.left + 20, r.top, 90); toast(`Nice, ${nm(w)}! Day ${+d + 1} done.`); }
+    setTimeout(() => { updatePlanMeta(); if (S.tab === "home") renderHome(); }, 350);
   });
-  renderProgress();
 }
-function renderProgress() {
-  const n = names();
-  ["me", "bro"].forEach(w => {
-    const total = DAYS.reduce((a, d) => a + d[w].length, 0);
-    const done = DAYS.reduce((a, d, i) => a + d[w].filter((_, j) => state.checks[`${i}-${w}-${j}`]).length, 0);
-    $(`#${w}Name`).textContent = n[w];
-    $(`#${w}Count`).textContent = `${done} / ${total} tasks`;
-    $(`#${w}Bar`).style.width = (100 * done / total) + "%";
+
+let planFilter = "all", openDay = null;
+function renderPlan() {
+  const cd = currentDay(); if (openDay === null) openDay = cd;
+  const weeks = [[0, 7, "Week 1 · Foundations"], [7, 13, "Week 2 · Real tools"], [13, 15, "Finale · Projects"]];
+  $("#planList").innerHTML = weeks.map(([a, b, label]) => {
+    const items = DAYS.slice(a, b).map((d, k) => [d, a + k]).filter(([, i]) => planFilter === "all" || !dayDone(i));
+    if (!items.length) return "";
+    return `<div class="week-label"><span class="eyebrow">${label}</span></div><div class="days stagger">${items.map(([d, i]) => dayHTML(d, i, cd)).join("")}</div>`;
+  }).join("") || `<div class="empty"><div class="em">🏆</div>Every day is done. Legends.</div>`;
+  $$("#planList .day-head").forEach(h => h.onclick = () => {
+    const card = h.closest(".day"), i = +card.dataset.day, was = card.classList.contains("open");
+    $$("#planList .day.open").forEach(c => c.classList.remove("open"));
+    if (!was) { card.classList.add("open"); openDay = i; setTimeout(() => card.scrollIntoView({ behavior: "smooth", block: "nearest" }), 200); } else openDay = -1;
+  });
+  bindTasks($("#planList"));
+}
+function dayHTML(d, i, cd) {
+  const v = V[d.v], pm = dayProgress(i, "me"), pb = dayProgress(i, "bro"), done = dayDone(i);
+  const col = w => `<div class="who-${w} ${S.who !== w ? "dim" : ""}"><h4><span class="dot" style="width:7px;height:7px;border-radius:50%;background:var(--${w})"></span>${esc(nm(w))}</h4><ul style="margin:0;padding:0">${d[w].map((t, j) => taskHTML(i, w, j, t)).join("")}</ul></div>`;
+  const order = S.who === "me" ? col("me") + col("bro") : col("bro") + col("me");
+  return `<div class="card day ${done ? "done" : ""} ${i === cd && !done ? "current" : ""} ${openDay === i ? "open" : ""}" data-day="${i}">
+    <button class="day-head" aria-expanded="${openDay === i}">
+      <div class="day-num">${done ? '<svg style="width:20px;height:20px"><use href="#i-check"/></svg>' : i + 1}</div>
+      <div class="day-title"><strong>${esc(d.t)}</strong><span>${esc(d.topic)}</span></div>
+      <div class="day-meta">${i === cd && !done ? '<span class="chip accent">Today</span>' : ""}
+        <div class="mini-bar" title="${esc(nm("me"))}"><i style="width:${pm * 100}%;background:var(--me)"></i></div>
+        <div class="mini-bar" title="${esc(nm("bro"))}"><i style="width:${pb * 100}%;background:var(--bro)"></i></div>
+        <svg class="chev"><use href="#i-chev"/></svg></div>
+    </button>
+    <div class="day-body"><div><div class="day-inner">
+      <div><div class="vid-mini thumb" data-play="${v.id}">${playThumb(v.id)}${S.watched[v.id] ? '<span class="watched-badge">Watched</span>' : ""}</div>
+        <div class="vid-cap"><strong>${esc(CHANNELS[v.ch].name)}</strong> · ${esc(d.note)}</div></div>
+      <div class="tasks-cols">${order}</div>
+    </div></div></div>
+  </div>`;
+}
+function updatePlanMeta() {
+  if (S.tab !== "plan") return;
+  $$("#planList .day").forEach(card => {
+    const i = +card.dataset.day, bars = card.querySelectorAll(".mini-bar i");
+    bars[0].style.width = dayProgress(i, "me") * 100 + "%"; bars[1].style.width = dayProgress(i, "bro") * 100 + "%";
+    const done = dayDone(i); card.classList.toggle("done", done);
+    card.querySelector(".day-num").innerHTML = done ? '<svg style="width:20px;height:20px"><use href="#i-check"/></svg>' : i + 1;
   });
 }
+$$("#planFilter button").forEach(b => b.onclick = () => { planFilter = b.dataset.f; $$("#planFilter button").forEach(x => x.classList.toggle("on", x === b)); renderPlan(); });
 
-// Videos
-$("#videoList").innerHTML = VIDEOS.map(v => `<div class="card video">
-  <div><h3><a href="${yt(v.q)}" target="_blank" rel="noopener">${esc(v.title)}</a></h3><p>${esc(v.desc)}</p></div>
-  <span class="pill">${esc(v.who)}</span></div>`).join("");
-
-// Lists (learned / todo)
-function renderList(kind) {
-  const n = names(), ul = $(`#${kind}List`), items = state[kind];
-  if (!items.length) { ul.innerHTML = `<li class="empty">Nothing here yet.</li>`; return; }
-  ul.innerHTML = items.map((it, i) => `<li>
-    ${kind === "todo" ? `<input type="checkbox" data-i="${i}" ${it.done ? "checked" : ""} style="margin-top:4px;accent-color:var(--done)">` : ""}
-    <div class="grow"><div style="${it.done ? "text-decoration:line-through;color:var(--muted)" : ""}">${esc(it.text)}</div>
-    <div class="meta"><span class="who-${it.who}">${esc(n[it.who])}</span> · ${esc(it.date)}</div></div>
-    <button class="x" data-del="${i}" title="Delete">×</button></li>`).join("");
-  ul.querySelectorAll("[data-del]").forEach(b => b.onclick = () => { items.splice(+b.dataset.del, 1); save(); renderList(kind); });
-  ul.querySelectorAll("input[data-i]").forEach(cb => cb.onchange = () => { items[+cb.dataset.i].done = cb.checked; save(); renderList(kind); });
+let vFilter = "All";
+const V_FILTERS = ["All", "Hindi", "English", "For me", "For brother", "Web", "Watched"];
+function renderVideos() {
+  $("#vFilters").innerHTML = V_FILTERS.map(f => `<button class="filter ${f === vFilter ? "on" : ""}" data-f="${f}">${f === "For me" ? "For " + esc(nm("me")) : f === "For brother" ? "For " + esc(nm("bro")) : f}</button>`).join("");
+  $$("#vFilters .filter").forEach(b => b.onclick = () => { vFilter = b.dataset.f; renderVideos(); });
+  const list = VIDEOS.filter(v => vFilter === "All" || v.lang === vFilter || (vFilter === "Web" && (v.level === "Web" || v.ch === "corey"))
+    || (vFilter === "For me" && v.for !== "bro") || (vFilter === "For brother" && v.for !== "me") || (vFilter === "Watched" && S.watched[v.id]));
+  $("#vGrid").innerHTML = list.length ? list.map(v => `
+    <article class="card lift vcard" data-play="${v.id}">
+      <div class="thumb">${playThumb(v.id)}<div class="badge-tl"><span>${v.lang}</span><span>${v.level}</span></div>${S.watched[v.id] ? '<span class="watched-badge">✓ Watched</span>' : ""}</div>
+      <div class="vinfo"><h3>${esc(v.title)}</h3><div class="channel">${avatar(v.ch)}${esc(CHANNELS[v.ch].name)}</div><p>${esc(v.desc)}</p>
+        <div class="row">${v.for === "both" ? '<span class="chip good">Both</span>' : v.for === "me" ? `<span class="chip accent">${esc(nm("me"))}</span>` : `<span class="chip bro">${esc(nm("bro"))}</span>`}${v.playlist ? '<span class="chip">Playlist</span>' : ""}</div></div>
+    </article>`).join("") : `<div class="empty" style="grid-column:1/-1"><div class="em">🎬</div>No videos here yet.</div>`;
+  $("#vGrid").classList.remove("stagger"); void $("#vGrid").offsetWidth; $("#vGrid").classList.add("stagger");
 }
-["learned", "todo"].forEach(kind => {
-  $(`#${kind}Form`).onsubmit = e => {
-    e.preventDefault();
-    const text = $(`#${kind}Text`).value.trim(); if (!text) return;
-    state[kind].unshift({ text, who: $(`#${kind}Who`).value, date: new Date().toLocaleDateString(), done: false });
-    $(`#${kind}Text`).value = ""; save(); renderList(kind);
+
+/* Player modal */
+let curVid = null;
+document.addEventListener("click", e => { const p = e.target.closest("[data-play]"); if (p) openPlayer(p.dataset.play); });
+function openPlayer(id) {
+  const v = V[id]; curVid = id;
+  const src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&modestbranding=1${v.playlist ? "&list=" + v.playlist : ""}`;
+  $("#player").innerHTML = `<iframe src="${src}" title="${esc(v.title)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
+  $("#mTitle").textContent = v.title; $("#mChannel").innerHTML = avatar(v.ch) + esc(CHANNELS[v.ch].name);
+  $("#mYT").href = ytUrl(v); paintWatched();
+  $("#modal").classList.add("open"); $("#modal").setAttribute("aria-hidden", "false"); document.body.style.overflow = "hidden";
+}
+function paintWatched() { $("#mWatched").innerHTML = S.watched[curVid] ? '<svg><use href="#i-check"/></svg>Watched' : "Mark as watched"; $("#mWatched").classList.toggle("accent", !S.watched[curVid]); }
+function closePlayer() { $("#modal").classList.remove("open"); $("#modal").setAttribute("aria-hidden", "true"); document.body.style.overflow = ""; setTimeout(() => $("#player").innerHTML = "", 300); }
+$("#mClose").onclick = closePlayer;
+$("#modal").onclick = e => { if (e.target.id === "modal") closePlayer(); };
+addEventListener("keydown", e => { if (e.key === "Escape") closePlayer(); });
+$("#mWatched").onclick = () => { S.watched[curVid] = !S.watched[curVid]; if (S.watched[curVid]) { markActive(); toast("Marked as watched 🎬"); } save(); paintWatched(); render(S.tab); };
+
+/* Journal & goals */
+function feed(kind) {
+  const items = S[kind], root = $(kind === "learned" ? "#learnedFeed" : "#goalFeed");
+  if (!items.length) { root.innerHTML = `<div class="empty"><div class="em">${kind === "learned" ? "📓" : "🎯"}</div>${kind === "learned" ? "Your learning log is empty. Add the first thing that clicked." : "Nothing planned yet. What do you want to learn next?"}</div>`; return; }
+  const col = w => w === "both" ? "good" : w;
+  root.innerHTML = items.map((x, i) => `
+    <div class="card entry ${x.done ? "done" : ""} ${x.fresh ? "enter" : ""}" data-i="${i}">
+      ${kind === "goals" ? `<label class="task" style="margin:0;padding:6px"><input type="checkbox" data-gi="${i}" ${x.done ? "checked" : ""}><span class="box"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg></span></label>`
+        : `<div class="icon" style="background:var(--${col(x.who)}-soft, var(--good-soft))">✨</div>`}
+      <div class="grow"><div>${esc(x.text)}</div><div class="meta"><span class="chip ${x.who === "both" ? "good" : x.who === "me" ? "accent" : "bro"}">${esc(nm(x.who))}</span>${esc(x.date || "")}${x.ts ? " · " + timeAgo(x.ts) : ""}</div></div>
+      <button class="icon-btn" data-del="${i}" title="Delete"><svg><use href="#i-x"/></svg></button>
+    </div>`).join("");
+  items.forEach(x => delete x.fresh);
+  root.querySelectorAll("[data-del]").forEach(b => b.onclick = () => {
+    const el = b.closest(".entry"); el.classList.add("leave");
+    setTimeout(() => { items.splice(+b.dataset.del, 1); save(); feed(kind); }, 280);
+  });
+  root.querySelectorAll("[data-gi]").forEach(cb => cb.onchange = () => {
+    items[+cb.dataset.gi].done = cb.checked; save();
+    if (cb.checked) { const r = cb.closest(".entry").getBoundingClientRect(); confetti(r.left + 30, r.top + 20, 60); toast("Goal reached 🎯"); }
+    setTimeout(() => feed(kind), 350);
+  });
+}
+[["learnedForm", "learned", "learnedText", "learnedWho"], ["goalForm", "goals", "goalText", "goalWho"]].forEach(([f, kind, txt, who]) => {
+  $("#" + f).onsubmit = e => {
+    e.preventDefault(); const text = $("#" + txt).value.trim(); if (!text) return;
+    S[kind].unshift({ text, who: $("#" + who).value, date: new Date().toLocaleDateString(undefined, { day: "numeric", month: "short" }), ts: Date.now(), done: false, fresh: true });
+    markActive(); $("#" + txt).value = ""; save(); feed(kind); toast(kind === "learned" ? "Added to your log ✨" : "Added to the list 🎯");
   };
 });
 
-// Notes
-$("#planNotes").value = state.notes;
-let t; $("#planNotes").oninput = e => { state.notes = e.target.value; clearTimeout(t); t = setTimeout(() => { save(); $("#savedHint").textContent = "Saved ✓"; }, 300); };
+/* Notes */
+$("#planNotes").value = S.notes;
+let nT; $("#planNotes").oninput = e => { S.notes = e.target.value; clearTimeout(nT); $("#savedChip").style.opacity = 0;
+  nT = setTimeout(() => { save(); $("#savedChip").style.opacity = 1; }, 400); };
+$("#rules").innerHTML = RULES.map(([e, t]) => `<div class="entry" style="padding:6px 0;border:0"><div class="icon" style="background:var(--bg-2)">${e}</div><div class="grow" style="padding-top:7px">${esc(t)}</div></div>`).join("");
 
-// Names
-$("#nameMe").value = state.names.me; $("#nameBro").value = state.names.bro;
-["Me", "Bro"].forEach(k => $(`#name${k}`).oninput = e => { state.names[k.toLowerCase()] = e.target.value.trim(); save(); renderAll(); });
-
-// Backup
+/* Settings */
+$("#nameMe").value = S.names.me; $("#nameBro").value = S.names.bro; $("#startDate").value = S.start;
+["Me", "Bro"].forEach(k => $("#name" + k).oninput = e => { S.names[k.toLowerCase()] = e.target.value.trim(); save(); paintSwitch();
+  $$("#learnedWho option, #goalWho option").forEach(o => { if (o.value !== "both") o.textContent = nm(o.value); }); });
+$("#startDate").onchange = e => { if (e.target.value) { S.start = e.target.value; save(); toast("Start date saved"); } };
+function applyTheme() { if (S.theme === "auto") document.documentElement.removeAttribute("data-theme"); else document.documentElement.dataset.theme = S.theme;
+  $$("#themeSeg button").forEach(b => b.classList.toggle("on", b.dataset.t === S.theme)); }
+$$("#themeSeg button").forEach(b => b.onclick = () => { S.theme = b.dataset.t; save(); applyTheme(); });
 $("#exportBtn").onclick = () => {
-  const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
-  const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
-  a.download = "python-together-backup.json"; a.click(); URL.revokeObjectURL(a.href);
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(S, null, 2)], { type: "application/json" }));
+  a.download = `pytogether-backup-${iso(new Date())}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); toast("Backup downloaded");
 };
-$("#importFile").onchange = e => {
-  const f = e.target.files[0]; if (!f) return;
-  f.text().then(txt => { state = Object.assign(defaults(), JSON.parse(txt)); save(); location.reload(); })
-    .catch(() => alert("That file couldn't be read."));
-};
-$("#resetBtn").onclick = () => { if (confirm("Delete all progress, notes and lists?")) { state = defaults(); save(); location.reload(); } };
+$("#importFile").onchange = e => { const f = e.target.files[0]; if (!f) return;
+  f.text().then(t => { S = Object.assign(defaults(), JSON.parse(t)); save(); location.reload(); }).catch(() => toast("That file couldn't be read")); };
+$("#resetBtn").onclick = () => { if (confirm("Delete all progress, notes and lists? This can't be undone.")) { const th = S.theme; S = defaults(); S.theme = th; save(); location.reload(); } };
 
-function renderAll() { renderDays(); renderList("learned"); renderList("todo"); }
-renderAll();
+let deferredPrompt;
+addEventListener("beforeinstallprompt", e => { e.preventDefault(); deferredPrompt = e; $("#installBtn").hidden = false; $("#installHint").textContent = "Install PyTogether like a real app."; });
+$("#installBtn").onclick = async () => { if (!deferredPrompt) return; deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; $("#installBtn").hidden = true; };
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(() => {});
+
+/* ================= Boot ================= */
+function render(tab) {
+  ({ home: renderHome, plan: renderPlan, videos: renderVideos, journal: () => feed("learned"), goals: () => feed("goals") }[tab] || (() => {}))();
+}
+$$("#learnedWho option, #goalWho option").forEach(o => { if (o.value !== "both") o.textContent = nm(o.value); });
+applyTheme(); go(S.tab); typeLoop();
+requestAnimationFrame(paintSwitch); addEventListener("resize", paintSwitch);
+document.fonts && document.fonts.ready.then(paintSwitch);
 </script>
 </body>
 </html>
