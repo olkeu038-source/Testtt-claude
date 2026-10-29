@@ -292,6 +292,15 @@
   .vinfo p { margin: 0; font-size: 13px; color: var(--muted); }
   .vinfo .row { margin-top: auto; padding-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
 
+  .resume-bar { position: absolute; z-index: 2; left: 0; right: 0; bottom: 0; height: 4px; background: rgba(255,255,255,.35); }
+  .resume-bar > i { display: block; height: 100%; background: #ff0033; }
+  .resume-chip { position: absolute; z-index: 2; right: 10px; bottom: 12px; background: rgba(0,0,0,.75); color: #fff; font: 600 11.5px var(--sans); padding: 3px 8px; border-radius: 6px; font-variant-numeric: tabular-nums; }
+  .cw-row { display: flex; gap: 14px; overflow-x: auto; padding: 4px 2px 10px; scroll-snap-type: x mandatory; }
+  .cw-row::-webkit-scrollbar { height: 6px; } .cw-row::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 9px; }
+  .cw-item { flex: 0 0 240px; scroll-snap-align: start; padding: 0; overflow: hidden; cursor: pointer; }
+  .cw-item .vinfo { padding: 10px 12px 12px; }
+  .cw-item h3 { font-size: 13.5px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
   /* ---------- Modal player ---------- */
   .modal {
     position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 20px;
@@ -450,6 +459,8 @@
         </div>
 
         <div class="grid-3 stagger" id="stats"></div>
+
+        <div id="continueWatching"></div>
 
         <div class="card today stagger" id="todayCard"></div>
 
@@ -681,7 +692,7 @@ const KEY = "pytogether-v2";
 const today0 = () => { const d = new Date(); d.setHours(0,0,0,0); return d; };
 const iso = d => d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
 const defaults = () => ({ checks: {}, watched: {}, learned: [], goals: [], notes: "", names: { me: "", bro: "" },
-  who: "me", tab: "home", theme: "auto", start: iso(today0()), activity: {} });
+  who: "me", tab: "home", theme: "auto", start: iso(today0()), activity: {}, pos: {} });
 let S = defaults();
 try {
   const raw = localStorage.getItem(KEY);
@@ -781,7 +792,11 @@ function ring(pct, color) {
   return `<div class="ring"><svg viewBox="0 0 74 74"><circle class="track" cx="37" cy="37" r="${r}"/><circle class="fill" cx="37" cy="37" r="${r}" stroke="${color}" stroke-dasharray="${c}" stroke-dashoffset="${c}" data-off="${c * (1 - pct)}"/></svg><div class="label">${Math.round(pct * 100)}%</div></div>`;
 }
 const animateRings = root => requestAnimationFrame(() => requestAnimationFrame(() => root.querySelectorAll(".ring .fill").forEach(f => f.style.strokeDashoffset = f.dataset.off)));
-function playThumb(id, cls = "") { const v = V[id]; return `${thumbImg(id, v.title)}<div class="play"><svg><use href="#i-play"/></svg></div>`; }
+const fmt = t => { t = Math.floor(t); const h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), s = t % 60;
+  return (h ? h + ":" + String(m).padStart(2, "0") : m) + ":" + String(s).padStart(2, "0"); };
+function resumeOverlay(id) { const p = S.pos[id]; if (!p) return "";
+  return `<span class="resume-chip">▶ ${fmt(p.t)}${p.d ? " / " + fmt(p.d) : ""}</span><div class="resume-bar"><i style="width:${p.d ? Math.min(100, p.t / p.d * 100) : 0}%"></i></div>`; }
+function playThumb(id) { const v = V[id]; return `${thumbImg(id, v.title)}<div class="play"><svg><use href="#i-play"/></svg></div>${resumeOverlay(id)}`; }
 function avatar(ch) { const c = CHANNELS[ch]; return `<span class="avatar" style="background:${c.color}">${c.ini}</span>`; }
 
 function renderHome() {
@@ -808,6 +823,12 @@ function renderHome() {
     </div>
     <div class="thumb thumb-wrap" data-play="${v.id}">${playThumb(v.id)}<div class="badge-tl"><span>${esc(CHANNELS[v.ch].name)}</span><span>${v.lang}</span></div></div>`;
   bindTasks($("#todayCard"));
+
+  const cw = Object.entries(S.pos).filter(([id]) => V[id]).sort((a, b) => b[1].at - a[1].at);
+  $("#continueWatching").innerHTML = cw.length ? `<div class="section-head" style="margin:4px 0 10px"><div class="eyebrow">Continue watching</div></div>
+    <div class="cw-row">${cw.map(([id]) => { const v = V[id]; return `<div class="card lift cw-item" data-play="${id}"><div class="thumb">${playThumb(id)}</div>
+      <div class="vinfo"><h3>${esc(v.title)}</h3><div class="channel">${avatar(v.ch)}${esc(CHANNELS[v.ch].name)}</div></div></div>`; }).join("")}</div>` : "";
+  $("#continueWatching").style.marginBottom = cw.length ? "20px" : "0";
 
   const L = S.learned.slice(0, 3), G = S.goals.filter(g => !g.done).slice(0, 3);
   $("#homeLearned").innerHTML = L.length ? L.map(x => `<div class="task" style="cursor:default"><span>✨</span><span class="t">${esc(x.text)} <span style="color:var(--muted);font-size:12px">· ${esc(nm(x.who))}</span></span></div>`).join("") : `<div style="color:var(--muted);font-size:14px;padding:8px 0">Nothing yet. Learned something today? Write it down.</div>`;
@@ -885,12 +906,12 @@ function updatePlanMeta() {
 $$("#planFilter button").forEach(b => b.onclick = () => { planFilter = b.dataset.f; $$("#planFilter button").forEach(x => x.classList.toggle("on", x === b)); renderPlan(); });
 
 let vFilter = "All";
-const V_FILTERS = ["All", "Hindi", "English", "For me", "For brother", "Web", "Watched"];
+const V_FILTERS = ["All", "In progress", "Hindi", "English", "For me", "For brother", "Web", "Watched"];
 function renderVideos() {
   $("#vFilters").innerHTML = V_FILTERS.map(f => `<button class="filter ${f === vFilter ? "on" : ""}" data-f="${f}">${f === "For me" ? "For " + esc(nm("me")) : f === "For brother" ? "For " + esc(nm("bro")) : f}</button>`).join("");
   $$("#vFilters .filter").forEach(b => b.onclick = () => { vFilter = b.dataset.f; renderVideos(); });
   const list = VIDEOS.filter(v => vFilter === "All" || v.lang === vFilter || (vFilter === "Web" && (v.level === "Web" || v.ch === "corey"))
-    || (vFilter === "For me" && v.for !== "bro") || (vFilter === "For brother" && v.for !== "me") || (vFilter === "Watched" && S.watched[v.id]));
+    || (vFilter === "For me" && v.for !== "bro") || (vFilter === "For brother" && v.for !== "me") || (vFilter === "Watched" && S.watched[v.id]) || (vFilter === "In progress" && S.pos[v.id]));
   $("#vGrid").innerHTML = list.length ? list.map(v => `
     <article class="card lift vcard" data-play="${v.id}">
       <div class="thumb">${playThumb(v.id)}<div class="badge-tl"><span>${v.lang}</span><span>${v.level}</span></div>${S.watched[v.id] ? '<span class="watched-badge">✓ Watched</span>' : ""}</div>
@@ -900,23 +921,66 @@ function renderVideos() {
   $("#vGrid").classList.remove("stagger"); void $("#vGrid").offsetWidth; $("#vGrid").classList.add("stagger");
 }
 
-/* Player modal */
-let curVid = null;
+/* Player modal: YouTube IFrame API so we can remember the exact second */
+let curVid = null, ytPlayer = null, posTimer = null, ytApi = null;
+function loadYT() {
+  if (ytApi) return ytApi;
+  ytApi = new Promise((res, rej) => {
+    if (window.YT && YT.Player) return res();
+    window.onYouTubeIframeAPIReady = res;
+    const sc = document.createElement("script"); sc.src = "https://www.youtube.com/iframe_api"; sc.onerror = rej; document.head.appendChild(sc);
+    setTimeout(rej, 8000);
+  }).catch(() => { ytApi = null; throw 0; });
+  return ytApi;
+}
+function savePos() {
+  if (!ytPlayer || !curVid || typeof ytPlayer.getCurrentTime !== "function") return;
+  const t = ytPlayer.getCurrentTime() || 0, d = ytPlayer.getDuration() || 0;
+  if (d && d - t < 20) { delete S.pos[curVid]; S.watched[curVid] = true; }
+  else if (t > 5) S.pos[curVid] = { t, d, at: Date.now() };
+  save();
+}
 document.addEventListener("click", e => { const p = e.target.closest("[data-play]"); if (p) openPlayer(p.dataset.play); });
 function openPlayer(id) {
-  const v = V[id]; curVid = id;
-  const src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&modestbranding=1${v.playlist ? "&list=" + v.playlist : ""}`;
-  $("#player").innerHTML = `<iframe src="${src}" title="${esc(v.title)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
+  const v = V[id], start = Math.floor(S.pos[id]?.t || 0); curVid = id;
+  $("#player").innerHTML = '<div id="ytp" style="width:100%;height:100%"></div>';
   $("#mTitle").textContent = v.title; $("#mChannel").innerHTML = avatar(v.ch) + esc(CHANNELS[v.ch].name);
-  $("#mYT").href = ytUrl(v); paintWatched();
+  $("#mYT").href = ytUrl(v) + (start ? "&t=" + start + "s" : ""); paintWatched();
   $("#modal").classList.add("open"); $("#modal").setAttribute("aria-hidden", "false"); document.body.style.overflow = "hidden";
+  history.pushState({ player: id }, "");  // phone back button closes the player instead of leaving the site
+  if (start) toast(`Resuming at ${fmt(start)}`);
+  loadYT().then(() => {
+    if (curVid !== id) return;
+    ytPlayer = new YT.Player("ytp", { videoId: id, host: "https://www.youtube-nocookie.com",
+      playerVars: { autoplay: 1, rel: 0, modestbranding: 1, playsinline: 1, start },
+      events: {
+        onReady: e => { if (start) e.target.seekTo(start, true); e.target.playVideo(); },
+        onStateChange: e => { if (e.data === 2) savePos(); if (e.data === 0) { savePos(); paintWatched(); toast("Finished 🎬 marked as watched"); } },
+      } });
+    clearInterval(posTimer); posTimer = setInterval(savePos, 5000);
+  }).catch(() => {  // API blocked or offline: plain embed, still starts at the saved second
+    $("#player").innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&start=${start}" title="${esc(v.title)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen style="width:100%;height:100%;border:0"></iframe>`;
+  });
 }
 function paintWatched() { $("#mWatched").innerHTML = S.watched[curVid] ? '<svg><use href="#i-check"/></svg>Watched' : "Mark as watched"; $("#mWatched").classList.toggle("accent", !S.watched[curVid]); }
-function closePlayer() { $("#modal").classList.remove("open"); $("#modal").setAttribute("aria-hidden", "true"); document.body.style.overflow = ""; setTimeout(() => $("#player").innerHTML = "", 300); }
-$("#mClose").onclick = closePlayer;
+function closePlayer(fromBack) {
+  if (!$("#modal").classList.contains("open")) return;
+  savePos(); clearInterval(posTimer);
+  const p = S.pos[curVid]; if (p) toast(`Saved at ${fmt(p.t)} — tap it later to resume`);
+  if (ytPlayer && ytPlayer.destroy) try { ytPlayer.destroy(); } catch (e) {}
+  ytPlayer = null; curVid = null;
+  $("#modal").classList.remove("open"); $("#modal").setAttribute("aria-hidden", "true"); document.body.style.overflow = "";
+  setTimeout(() => { if (!curVid) $("#player").innerHTML = ""; }, 300);
+  if (!fromBack && history.state && history.state.player) history.back();
+  render(S.tab);
+}
+addEventListener("popstate", () => closePlayer(true));
+addEventListener("pagehide", savePos);
+document.addEventListener("visibilitychange", () => { if (document.hidden) savePos(); });
+$("#mClose").onclick = () => closePlayer();
 $("#modal").onclick = e => { if (e.target.id === "modal") closePlayer(); };
 addEventListener("keydown", e => { if (e.key === "Escape") closePlayer(); });
-$("#mWatched").onclick = () => { S.watched[curVid] = !S.watched[curVid]; if (S.watched[curVid]) { markActive(); toast("Marked as watched 🎬"); } save(); paintWatched(); render(S.tab); };
+$("#mWatched").onclick = () => { S.watched[curVid] = !S.watched[curVid]; if (S.watched[curVid]) { markActive(); toast("Marked as watched 🎬"); } save(); paintWatched(); };
 
 /* Journal & goals */
 function feed(kind) {

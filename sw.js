@@ -1,5 +1,5 @@
 // Caches the app shell so PyTogether opens offline once installed.
-const CACHE = "pytogether-v2";
+const CACHE = "pytogether-v3";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "icon.svg"];
 
 self.addEventListener("install", e => {
