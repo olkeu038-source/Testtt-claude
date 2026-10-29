@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Python Together Tracker</title>
+<style>
+  :root {
+    --bg: #f6f5f1; --card: #ffffff; --text: #1d1d1f; --muted: #6b6b70;
+    --line: #e3e1da; --accent: #2f6fde; --accent-soft: #e6eefc;
+    --me: #2f6fde; --bro: #d9762b; --done: #2e9d5b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141416; --card: #1d1d21; --text: #ececf0; --muted: #9a9aa3;
+      --line: #2e2e34; --accent: #6d9bff; --accent-soft: #22304d;
+      --me: #6d9bff; --bro: #f0a060; --done: #4cc77f;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141416; --card: #1d1d21; --text: #ececf0; --muted: #9a9aa3;
+    --line: #2e2e34; --accent: #6d9bff; --accent-soft: #22304d;
+    --me: #6d9bff; --bro: #f0a060; --done: #4cc77f;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { margin: 0 0 4px; font-size: 26px; }
+  .sub { color: var(--muted); margin: 0 0 20px; }
+  nav { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; position: sticky; top: 0; background: var(--bg); padding: 8px 0; z-index: 2; }
+  nav button {
+    border: 1px solid var(--line); background: var(--card); color: var(--text);
+    padding: 7px 14px; border-radius: 999px; cursor: pointer; font: inherit;
+  }
+  nav button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  section { display: none; }
+  section.active { display: block; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+  .progress { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .bar { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; margin-top: 6px; }
+  .bar > div { height: 100%; width: 0; transition: width .3s; }
+  .me .bar > div { background: var(--me); }
+  .bro .bar > div { background: var(--bro); }
+  .day-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .day-head h3 { margin: 0; font-size: 17px; }
+  .tag { font-size: 12px; color: var(--muted); }
+  .watch { background: var(--accent-soft); border-radius: 8px; padding: 8px 10px; margin: 10px 0; font-size: 14px; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .cols h4 { margin: 6px 0; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
+  .cols .me h4 { color: var(--me); }
+  .cols .bro h4 { color: var(--bro); }
+  label.task { display: flex; gap: 8px; align-items: flex-start; padding: 4px 0; cursor: pointer; }
+  label.task input { margin-top: 4px; accent-color: var(--done); }
+  label.task.checked span { color: var(--muted); text-decoration: line-through; }
+  .day-done { color: var(--done); font-weight: 600; font-size: 13px; }
+  a { color: var(--accent); }
+  .video { display: flex; gap: 12px; justify-content: space-between; align-items: flex-start; }
+  .video h3 { margin: 0 0 4px; font-size: 16px; }
+  .video p { margin: 0; color: var(--muted); font-size: 14px; }
+  .pill { font-size: 12px; padding: 2px 8px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); white-space: nowrap; }
+  form.add { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  form.add input, form.add select, textarea {
+    flex: 1 1 180px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px;
+    background: var(--card); color: var(--text); font: inherit;
+  }
+  textarea { width: 100%; min-height: 160px; resize: vertical; }
+  .btn { padding: 9px 14px; border-radius: 8px; border: 0; background: var(--accent); color: #fff; font: inherit; cursor: pointer; }
+  .btn.ghost { background: transparent; color: var(--text); border: 1px solid var(--line); }
+  ul.list { list-style: none; margin: 0; padding: 0; }
+  ul.list li { display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  ul.list li:last-child { border-bottom: 0; }
+  ul.list .meta { font-size: 12px; color: var(--muted); }
+  ul.list .grow { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+  .x { background: none; border: 0; color: var(--muted); cursor: pointer; font-size: 18px; line-height: 1; }
+  .empty { color: var(--muted); font-style: italic; }
+  .who-me { color: var(--me); font-weight: 600; }
+  .who-bro { color: var(--bro); font-weight: 600; }
+  .who-both { color: var(--done); font-weight: 600; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  @media (max-width: 620px) {
+    .cols, .progress { grid-template-columns: 1fr; }
+    .video { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Python Together 🐍</h1>
+  <p class="sub">15-day Diwali plan for two brothers. Tick tasks, log what you learned, and plan what's next. Everything saves in this browser.</p>
+
+  <nav>
+    <button data-tab="plan" class="active">15-Day Tasks</button>
+    <button data-tab="videos">Videos</button>
+    <button data-tab="learned">Learned</button>
+    <button data-tab="todo">To Learn</button>
+    <button data-tab="notes">Plans &amp; Notes</button>
+    <button data-tab="settings">Backup</button>
+  </nav>
+
+  <!-- 15-day plan -->
+  <section id="plan" class="active">
+    <div class="progress">
+      <div class="card me"><strong id="meName">Me</strong> <span class="tag" id="meCount"></span><div class="bar"><div id="meBar"></div></div></div>
+      <div class="card bro"><strong id="broName">Brother</strong> <span class="tag" id="broCount"></span><div class="bar"><div id="broBar"></div></div></div>
+    </div>
+    <div id="days"></div>
+  </section>
+
+  <!-- Videos -->
+  <section id="videos">
+    <div class="card"><strong>How to use these:</strong> watch together, pause often, and type every example yourself. Don't just watch. The links open YouTube search so you always land on the official upload.</div>
+    <div id="videoList"></div>
+  </section>
+
+  <!-- Learned -->
+  <section id="learned">
+    <form class="add" id="learnedForm">
+      <input id="learnedText" placeholder="What did you learn? e.g. for loops go through every item in a list" required>
+      <select id="learnedWho"><option value="me">Me</option><option value="bro">Brother</option><option value="both">Both</option></select>
+      <button class="btn">Add</button>
+    </form>
+    <div class="card"><ul class="list" id="learnedList"></ul></div>
+  </section>
+
+  <!-- To learn -->
+  <section id="todo">
+    <form class="add" id="todoForm">
+      <input id="todoText" placeholder="Something to learn next, e.g. classes and objects" required>
+      <select id="todoWho"><option value="both">Both</option><option value="me">Me</option><option value="bro">Brother</option></select>
+      <button class="btn">Add</button>
+    </form>
+    <div class="card"><ul class="list" id="todoList"></ul></div>
+  </section>
+
+  <!-- Notes -->
+  <section id="notes">
+    <div class="card">
+      <h3 style="margin-top:0">Our plan</h3>
+      <textarea id="planNotes" placeholder="Goals, daily time, project ideas, doubts to ask about..."></textarea>
+      <p class="tag" id="savedHint">Saves automatically.</p>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">Daily rules</h3>
+      <ul>
+        <li>60–90 minutes a day, same time every day.</li>
+        <li>Type the code yourself. No copy-paste from AI.</li>
+        <li>If you can't explain a line out loud, you don't move on.</li>
+        <li>Use <a href="https://pythontutor.com" target="_blank" rel="noopener">pythontutor.com</a> to watch your code run step by step.</li>
+        <li>Ask AI for hints and explanations, not full answers.</li>
+        <li>Big brother reviews little brother's code every day. Explaining it teaches you too.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Settings -->
+  <section id="settings">
+    <div class="card">
+      <h3 style="margin-top:0">Names</h3>
+      <div class="row">
+        <input id="nameMe" placeholder="Your name" style="flex:1 1 160px;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--text);font:inherit">
+        <input id="nameBro" placeholder="Brother's name" style="flex:1 1 160px;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--text);font:inherit">
+      </div>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">Backup your progress</h3>
+      <p class="tag">Progress lives in this browser only. Export a file now and then so you don't lose it, or to move it to another device.</p>
+      <div class="row">
+        <button class="btn" id="exportBtn">Export file</button>
+        <label class="btn ghost">Import file <input type="file" id="importFile" accept="application/json" hidden></label>
+        <button class="btn ghost" id="resetBtn">Reset everything</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+const yt = q => "https://www.youtube.com/results?search_query=" + encodeURIComponent(q);
+
+const VIDEOS = [
+  { title: "CS50's Introduction to Programming with Python (CS50P)", who: "Main course — both",
+    desc: "Harvard's free full course by David Malan. Lectures 0–9: functions, conditionals, loops, exceptions, libraries, files, regex, OOP. The backbone of this plan.",
+    q: "CS50P 2022 Harvard Introduction to Programming with Python full course" },
+  { title: "Python Tutorial for Beginners — Programming with Mosh", who: "Brother's first video",
+    desc: "Short, very clear intro. Great for day 1 if you've never coded.",
+    q: "Programming with Mosh Python tutorial for beginners" },
+  { title: "Python for Beginners — Full Course (freeCodeCamp)", who: "Extra practice",
+    desc: "Long single video. Use it when a CS50P topic didn't click and you want another explanation.",
+    q: "freeCodeCamp Python full course for beginners" },
+  { title: "Corey Schafer — Python Tutorials playlist", who: "Me (deeper)",
+    desc: "Clean explanations of specific topics: dictionaries, functions, files, JSON, virtual environments, requests.",
+    q: "Corey Schafer Python tutorial beginner playlist" },
+  { title: "Corey Schafer — Flask Tutorials", who: "Me (days 10–12)",
+    desc: "Build a real website with Python. Uses your HTML/CSS skills directly.",
+    q: "Corey Schafer Flask tutorial part 1" },
+  { title: "Python SQLite tutorial", who: "Me (day 9)",
+    desc: "Using the built-in sqlite3 module. You already know databases, so this is fast.",
+    q: "Corey Schafer Python SQLite tutorial" },
+];
+
+// Each day: title, what to watch, tasks for me, tasks for brother
+const DAYS = [
+  { t: "Setup + first program", watch: "Mosh beginner video (first hour) or CS50P Lecture 0 (first half)",
+    me: ["Install Python and VS Code (with Python extension)", "Run print('Hello') from a .py file and the terminal", "Learn variables, str, int, float, input()"],
+    bro: ["Install Python and VS Code with big brother", "Write a program that asks your name and says hi", "Make a program that adds two numbers you type in"] },
+  { t: "Functions", watch: "CS50P Lecture 0 (second half)",
+    me: ["Write 3 functions with parameters and return values", "Learn f-strings, .strip(), .title(), round()", "Make a tip calculator using functions"],
+    bro: ["Understand what def and return do (explain it out loud)", "Write a function that squares a number", "Make an 'einstein' program: E = m × c²"] },
+  { t: "Conditionals", watch: "CS50P Lecture 1",
+    me: ["if / elif / else, and / or, match", "Grade calculator (marks → A/B/C/F)", "Write a function is_even(n) returning True/False"],
+    bro: ["Write a program: is the number positive, negative, or zero?", "Make a simple password checker", "Explain your code to big brother"] },
+  { t: "Loops", watch: "CS50P Lecture 2 (first half)",
+    me: ["while, for, range(), break, continue", "Print a multiplication table for any number", "Draw a square of # with nested loops"],
+    bro: ["Count 1 to 10 with a for loop, then a while loop", "Guess-the-number game (use random.randint)", "Add a 'tries left' counter to the game"] },
+  { t: "Lists + dictionaries (= JSON!)", watch: "CS50P Lecture 2 (second half)",
+    me: ["Lists: append, remove, slicing, loop over them", "Dicts: compare to JSON objects you already know", "List of dicts: students with name + marks, print the topper"],
+    bro: ["Make a list of 5 favourite games, print each one", "Make a dict: word → meaning (mini dictionary)", "Ask the user for a word, show its meaning"] },
+  { t: "Errors + exceptions", watch: "CS50P Lecture 3",
+    me: ["try / except / else, ValueError, KeyError", "Make input() that keeps asking until you type a valid number", "Read 5 error messages on purpose and understand each"],
+    bro: ["Break your guess game on purpose, read the error", "Fix it with try / except", "Review week 1 — redo any task that felt hard"] },
+  { t: "Libraries + pip", watch: "CS50P Lecture 4",
+    me: ["import random, statistics, sys", "pip install requests; fetch JSON from a free API", "Make a program that prints a random joke or quote from an API"],
+    bro: ["Rock-paper-scissors vs computer using random", "Keep score for best of 5", "Show it to big brother"] },
+  { t: "Mini project day", watch: "No new video — build!",
+    me: ["Build a weather or currency checker using an API", "Split code into clean functions", "Write a short README explaining it"],
+    bro: ["Build a quiz game: 5 questions, score at the end", "Store questions in a list of dicts", "Big brother reviews the code"] },
+  { t: "Files + JSON + SQLite", watch: "CS50P Lecture 6 + SQLite video",
+    me: ["Read and write .txt and .csv files", "json.load / json.dump — save and load data", "sqlite3: create a table, insert, select (your DB skills!)"],
+    bro: ["Save quiz high scores to a text file", "Load and show the high score when the game starts", "Explain what open() and 'with' do"] },
+  { t: "Flask: first web page", watch: "Corey Schafer Flask part 1–2",
+    me: ["Install Flask, run hello world on localhost", "Use templates with your own HTML/CSS", "Add 2 pages with links between them"],
+    bro: ["Start a terminal to-do list: add / show / remove tasks", "Use a list and a while loop menu", "Keep it running until user types 'quit'"] },
+  { t: "Flask: forms + database", watch: "Corey Schafer Flask part 3–4",
+    me: ["Add an HTML form and handle POST in Flask", "Save form data into SQLite", "Show saved data on a page"],
+    bro: ["Save the to-do list to a file so it remembers tasks", "Add 'mark as done'", "Handle wrong input without crashing"] },
+  { t: "Classes (OOP basics)", watch: "CS50P Lecture 8",
+    me: ["class, __init__, self, methods", "Rewrite your student list using a Student class", "Understand why classes are useful (explain to brother)"],
+    bro: ["Watch the first half with big brother", "Make a simple Pet class with name and speak()", "Make 2 pets and make them speak"] },
+  { t: "Final project — build", watch: "None — build!",
+    me: ["Pick: Flask app (to-do, notes, quiz site) with SQLite", "Build the core feature", "Commit to GitHub"],
+    bro: ["Pick: text adventure, quiz, or upgraded guessing game", "Build the core feature", "Ask for help only after trying 15 minutes"] },
+  { t: "Final project — finish", watch: "None",
+    me: ["Finish features, fix bugs", "Clean up code: good names, small functions", "Write a README"],
+    bro: ["Finish and test your project", "Add one extra feature you thought of yourself", "Write 3 lines about what it does"] },
+  { t: "Demo day + review", watch: "Rewatch any lecture that felt weak",
+    me: ["Demo your project to brother", "Read brother's code and explain it line by line", "Write the next month's plan in Plans & Notes"],
+    bro: ["Demo your project to big brother", "Explain your code line by line", "Add 3 things to 'To Learn' for next month"] },
+];
+
+const KEY = "python-together-v1";
+const defaults = () => ({ checks: {}, learned: [], todo: [], notes: "", names: { me: "", bro: "" } });
+let state = defaults();
+try { const raw = localStorage.getItem(KEY); if (raw) state = Object.assign(defaults(), JSON.parse(raw)); } catch (e) {}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const names = () => ({ me: state.names.me || "Me", bro: state.names.bro || "Brother", both: "Both" });
+
+// Tabs
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("nav button").forEach(x => x.classList.toggle("active", x === b));
+  document.querySelectorAll("section").forEach(s => s.classList.toggle("active", s.id === b.dataset.tab));
+  try { localStorage.setItem(KEY + "-tab", b.dataset.tab); } catch (e) {}
+});
+try { const t = localStorage.getItem(KEY + "-tab"); if (t) document.querySelector(`nav button[data-tab="${t}"]`)?.click(); } catch (e) {}
+
+// Plan
+function renderDays() {
+  const n = names();
+  $("#days").innerHTML = DAYS.map((d, i) => {
+    const col = who => d[who].map((task, j) => {
+      const id = `${i}-${who}-${j}`, on = !!state.checks[id];
+      return `<label class="task ${on ? "checked" : ""}"><input type="checkbox" data-id="${id}" ${on ? "checked" : ""}><span>${esc(task)}</span></label>`;
+    }).join("");
+    const all = ["me", "bro"].every(w => d[w].every((_, j) => state.checks[`${i}-${w}-${j}`]));
+    return `<div class="card">
+      <div class="day-head"><h3>Day ${i + 1} · ${esc(d.t)}</h3>${all ? '<span class="day-done">✓ Day complete</span>' : ""}</div>
+      <div class="watch">▶ <strong>Watch:</strong> ${esc(d.watch)}</div>
+      <div class="cols"><div class="me"><h4>${esc(n.me)}</h4>${col("me")}</div><div class="bro"><h4>${esc(n.bro)}</h4>${col("bro")}</div></div>
+    </div>`;
+  }).join("");
+  $("#days").querySelectorAll("input[type=checkbox]").forEach(cb => cb.onchange = () => {
+    state.checks[cb.dataset.id] = cb.checked; save(); renderDays();
+  });
+  renderProgress();
+}
+function renderProgress() {
+  const n = names();
+  ["me", "bro"].forEach(w => {
+    const total = DAYS.reduce((a, d) => a + d[w].length, 0);
+    const done = DAYS.reduce((a, d, i) => a + d[w].filter((_, j) => state.checks[`${i}-${w}-${j}`]).length, 0);
+    $(`#${w}Name`).textContent = n[w];
+    $(`#${w}Count`).textContent = `${done} / ${total} tasks`;
+    $(`#${w}Bar`).style.width = (100 * done / total) + "%";
+  });
+}
+
+// Videos
+$("#videoList").innerHTML = VIDEOS.map(v => `<div class="card video">
+  <div><h3><a href="${yt(v.q)}" target="_blank" rel="noopener">${esc(v.title)}</a></h3><p>${esc(v.desc)}</p></div>
+  <span class="pill">${esc(v.who)}</span></div>`).join("");
+
+// Lists (learned / todo)
+function renderList(kind) {
+  const n = names(), ul = $(`#${kind}List`), items = state[kind];
+  if (!items.length) { ul.innerHTML = `<li class="empty">Nothing here yet.</li>`; return; }
+  ul.innerHTML = items.map((it, i) => `<li>
+    ${kind === "todo" ? `<input type="checkbox" data-i="${i}" ${it.done ? "checked" : ""} style="margin-top:4px;accent-color:var(--done)">` : ""}
+    <div class="grow"><div style="${it.done ? "text-decoration:line-through;color:var(--muted)" : ""}">${esc(it.text)}</div>
+    <div class="meta"><span class="who-${it.who}">${esc(n[it.who])}</span> · ${esc(it.date)}</div></div>
+    <button class="x" data-del="${i}" title="Delete">×</button></li>`).join("");
+  ul.querySelectorAll("[data-del]").forEach(b => b.onclick = () => { items.splice(+b.dataset.del, 1); save(); renderList(kind); });
+  ul.querySelectorAll("input[data-i]").forEach(cb => cb.onchange = () => { items[+cb.dataset.i].done = cb.checked; save(); renderList(kind); });
+}
+["learned", "todo"].forEach(kind => {
+  $(`#${kind}Form`).onsubmit = e => {
+    e.preventDefault();
+    const text = $(`#${kind}Text`).value.trim(); if (!text) return;
+    state[kind].unshift({ text, who: $(`#${kind}Who`).value, date: new Date().toLocaleDateString(), done: false });
+    $(`#${kind}Text`).value = ""; save(); renderList(kind);
+  };
+});
+
+// Notes
+$("#planNotes").value = state.notes;
+let t; $("#planNotes").oninput = e => { state.notes = e.target.value; clearTimeout(t); t = setTimeout(() => { save(); $("#savedHint").textContent = "Saved ✓"; }, 300); };
+
+// Names
+$("#nameMe").value = state.names.me; $("#nameBro").value = state.names.bro;
+["Me", "Bro"].forEach(k => $(`#name${k}`).oninput = e => { state.names[k.toLowerCase()] = e.target.value.trim(); save(); renderAll(); });
+
+// Backup
+$("#exportBtn").onclick = () => {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+  a.download = "python-together-backup.json"; a.click(); URL.revokeObjectURL(a.href);
+};
+$("#importFile").onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  f.text().then(txt => { state = Object.assign(defaults(), JSON.parse(txt)); save(); location.reload(); })
+    .catch(() => alert("That file couldn't be read."));
+};
+$("#resetBtn").onclick = () => { if (confirm("Delete all progress, notes and lists?")) { state = defaults(); save(); location.reload(); } };
+
+function renderAll() { renderDays(); renderList("learned"); renderList("todo"); }
+renderAll();
+</script>
+</body>
+</html>
