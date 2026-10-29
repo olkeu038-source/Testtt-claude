@@ -488,7 +488,7 @@
       <!-- VIDEOS -->
       <section class="view" id="v-videos">
         <div class="section-head">
-          <div><h1>Video Library</h1><p>Hand-picked courses in Hindi and English. Plays right here in the app.</p></div>
+          <div><h1>Video Library</h1><p>Recent English courses, hand-picked for this plan. They play right here and remember where you stopped.</p></div>
         </div>
         <div class="filters" id="vFilters"></div>
         <div class="vgrid stagger" id="vGrid"></div>
@@ -568,100 +568,80 @@
 <script>
 /* ================= Data ================= */
 const CHANNELS = {
-  harry:  { name: "CodeWithHarry",       color: "#7b3fe4", ini: "CH" },
-  apna:   { name: "Apna College",        color: "#e8453c", ini: "AC" },
-  mosh:   { name: "Programming with Mosh", color: "#2f80ed", ini: "PM" },
-  cs50:   { name: "CS50 · Harvard",      color: "#a51c30", ini: "CS" },
-  fcc:    { name: "freeCodeCamp",        color: "#0a0a23", ini: "fC" },
-  corey:  { name: "Corey Schafer",       color: "#3a7d44", ini: "CS" },
+  baraa: { name: "Data with Baraa", color: "#1f6feb", ini: "DB" },
+  corey: { name: "Corey Schafer",   color: "#3a7d44", ini: "CS" },
+  tim:   { name: "Tech With Tim",   color: "#d9480f", ini: "TT" },
+  yt:    { name: "YouTube course",  color: "#8f897d", ini: "▶" },  // channel not confirmed, shown honestly
 };
 
+// All English, all recent. "date" is the upload month we could verify.
 const VIDEOS = [
-  { id: "ihk_Xglr164", ch: "harry", lang: "Hindi", level: "Beginner", for: "both",
-    title: "Python Tutorial In Hindi — Learn Python in One Video",
-    desc: "Harry's one-shot course with timestamps. The best first watch in Hindi." },
-  { id: "ERCMXc8x7mc", ch: "apna", lang: "Hindi", level: "Beginner", for: "both",
-    title: "Python Tutorial for Beginners — Full Course (with Notes & Practice Questions)",
-    desc: "Shradha's full course. Comes with notes and practice questions after each topic." },
-  { id: "fr1f84rg4Nw", ch: "harry", lang: "Hindi", level: "Beginner", for: "bro",
-    title: "15 Minute Python Crash Course in Hindi",
-    desc: "A quick taste of Python before the big course. Perfect for Day 1." },
-  { id: "bfSHM-vx5lA", ch: "harry", lang: "Hindi", level: "Beginner", for: "bro",
-    title: "Writing Our First Python Program — Python Course for Absolute Beginners",
-    desc: "Part of Harry's step-by-step series. Small videos, one concept each." },
-  { id: "qVyvmzFxF_o", ch: "apna", lang: "Hindi", level: "Beginner", for: "both",
-    title: "Lecture 3: List & Tuple in Python",
-    desc: "Apna College's lecture on lists and tuples, with practice questions." },
-  { id: "kqtD5dpn9C8", ch: "mosh", lang: "English", level: "Beginner", for: "bro",
-    title: "Python for Beginners — Learn Coding with Python in 1 Hour",
-    desc: "Very clear and calm. Variables, strings, conditionals, loops, lists." },
-  { id: "_uQrJ0TkZlc", ch: "mosh", lang: "English", level: "Beginner", for: "me",
-    title: "Python Full Course for Beginners",
-    desc: "Mosh's longer course with chapters. Good second explanation for any topic." },
-  { id: "yVl_G-F7m8c", ch: "mosh", lang: "English", level: "Projects", for: "both",
-    title: "Python Projects for Beginners",
-    desc: "Dice game, number guessing, rock-paper-scissors, QR code generator." },
-  { id: "nLRL_NcnK-4", ch: "fcc", lang: "English", level: "Course", for: "me",
-    title: "Harvard CS50's Introduction to Programming with Python — Full Course",
-    desc: "The whole CS50P course in one video. Deep and well taught.",
-    playlist: "PLhQjrBD2T3817j24-GogXmWqO5Q5vYy0V" },
-  { id: "pd-0G0MigUA", ch: "corey", lang: "English", level: "Intermediate", for: "me",
-    title: "Python SQLite Tutorial: Database, Tables and Queries",
-    desc: "The built-in sqlite3 module. You know databases, so this goes fast." },
-  { id: "MwZwr5Tvyxo", ch: "corey", lang: "English", level: "Web", for: "me",
-    title: "Python Flask Tutorial Part 1 — Getting Started",
-    desc: "Your first Python website. Uses your HTML/CSS skills directly.",
-    playlist: "PL-osiE80TeTs4UjLw5MM6OjgkjFeUxCYH" },
-  { id: "QnDWIZuWYW0", ch: "corey", lang: "English", level: "Web", for: "me",
-    title: "Python Flask Tutorial Part 2 — Templates",
-    desc: "Reuse your HTML with templates across pages." },
+  { id: "Rq5gJVxz55Q", ch: "baraa", date: "Feb 2026", level: "Full course", tags: ["course", "beginner"], for: "both",
+    title: "Python Full Course for Beginners (13 Hours) — From Zero to Hero",
+    desc: "The main course for this plan. Clear visuals, every topic from variables to classes." },
+  { id: "wCKellrHkUk", ch: "yt", date: "Jul 2026", level: "Beginner", tags: ["beginner"], for: "bro",
+    title: "Python for Absolute Beginners Course — Let's Start to Code!",
+    desc: "The newest one here. Slow and friendly, made for people who have never coded." },
+  { id: "YfnhD-4gKUM", ch: "yt", date: "May 2026", level: "Full course", tags: ["course", "beginner"], for: "both",
+    title: "Python Full Course for FREE 🐍",
+    desc: "A second full course. Use it when a topic didn't click the first time." },
+  { id: "R_DarTl4a0g", ch: "yt", date: "May 2026", level: "Projects", tags: ["course", "projects"], for: "both",
+    title: "The Complete Python Course 2026 for Beginners — 4 Projects",
+    desc: "Learn by building. Great for project days and the final project." },
+  { id: "iukOehU5aF4", ch: "corey", date: "Apr 2026", level: "Web", tags: ["web"], for: "me",
+    title: "Python FastAPI Tutorial: Full Course — Build a Full-Stack Web App",
+    desc: "Modern Python web development with FastAPI, templates and a database. Your HTML/CSS skills fit right in.",
+    playlist: "PL-osiE80TeTsak-c-QsVeg0YYG_0TeyXI" },
+  { id: "eSbeub2ZeNk", ch: "tim", date: "", level: "AI", tags: ["ai", "projects"], for: "me",
+    title: "Build & Deploy a Python AI Agent in 20 Minutes",
+    desc: "Python + AI in practice. Watch after you know functions and APIs." },
 ];
 const V = Object.fromEntries(VIDEOS.map(v => [v.id, v]));
 
 const DAYS = [
-  { t: "Setup + your first program", topic: "print, variables, input", v: "fr1f84rg4Nw", note: "Then start Harry's one-shot (first part).",
+  { t: "Setup + your first program", topic: "print, variables, input", v: "wCKellrHkUk", note: "Watch the intro and setup part.",
     me: ["Install Python + VS Code (with the Python extension)", "Run a .py file from the terminal", "Learn str, int, float and input()"],
     bro: ["Install Python + VS Code with big brother", "Make a program that asks your name and says hi", "Make a program that adds two numbers you type"] },
-  { t: "Variables, strings, operators", topic: "f-strings, math, type()", v: "ihk_Xglr164", note: "Continue Harry's one-shot: variables → strings.",
+  { t: "Variables, strings, operators", topic: "f-strings, math, type()", v: "Rq5gJVxz55Q", note: "Baraa's course: variables, data types and strings.",
     me: ["Use f-strings, .strip(), .title(), .replace()", "Make a tip calculator", "Explain int vs float vs str out loud"],
     bro: ["Make an age-in-days calculator", "Print your name 10 times using *", "Show big brother and explain each line"] },
-  { t: "Conditionals", topic: "if, elif, else, and, or", v: "ERCMXc8x7mc", note: "Apna College: the conditional statements part.",
+  { t: "Conditionals", topic: "if, elif, else, and, or", v: "Rq5gJVxz55Q", note: "Baraa's course: the conditions part.",
     me: ["Grade calculator: marks → A/B/C/F", "Use match-case once", "Write is_even(n) returning True/False"],
     bro: ["Is the number positive, negative or zero?", "Make a simple password checker", "Make a 'can I vote?' age checker"] },
-  { t: "Loops", topic: "for, while, range, break", v: "kqtD5dpn9C8", note: "Mosh's 1-hour video: the loops section.",
+  { t: "Loops", topic: "for, while, range, break", v: "wCKellrHkUk", note: "The loops chapter.",
     me: ["Multiplication table for any number", "Draw a square of # with nested loops", "Sum of numbers 1 to n with while"],
     bro: ["Count 1 to 10 with for, then with while", "Guess-the-number game (random.randint)", "Add a 'tries left' counter"] },
-  { t: "Lists & tuples", topic: "append, slicing, loops over lists", v: "qVyvmzFxF_o", note: "Do the practice questions at the end too.",
+  { t: "Lists & tuples", topic: "append, slicing, loops over lists", v: "Rq5gJVxz55Q", note: "Baraa's course: lists and tuples.",
     me: ["append, remove, sort, slicing", "Find the largest number without max()", "Remove duplicates from a list"],
     bro: ["List of your 5 favourite games, print each", "Add and remove a game from the list", "Print the list in reverse"] },
-  { t: "Dictionaries (= JSON!)", topic: "keys, values, nested data", v: "ERCMXc8x7mc", note: "Apna College: the dictionary & set part.",
+  { t: "Dictionaries (= JSON!)", topic: "keys, values, nested data", v: "YfnhD-4gKUM", note: "The dictionaries section.",
     me: ["Compare dicts to JSON objects you already know", "List of dicts: students → print the topper", "Count letters in a word with a dict"],
     bro: ["Mini dictionary: word → meaning", "Ask for a word, show its meaning", "Say 'not found' if the word is missing"] },
-  { t: "Functions", topic: "def, return, parameters", v: "ihk_Xglr164", note: "Harry's one-shot: the functions part.",
+  { t: "Functions", topic: "def, return, parameters", v: "Rq5gJVxz55Q", note: "Baraa's course: functions.",
     me: ["Write 3 functions with return values", "Refactor your tip calculator into functions", "Learn default args and *args"],
     bro: ["Write a function that squares a number", "Write greet(name)", "Explain def vs return to big brother"] },
-  { t: "Mini project day", topic: "build something real", v: "yVl_G-F7m8c", note: "Watch one project, then build your own version.",
+  { t: "Mini project day", topic: "build something real", v: "R_DarTl4a0g", note: "Watch one of the 4 projects, then build your own version.",
     me: ["Rock-paper-scissors with score, best of 5", "Split it into clean functions", "Write a short README"],
     bro: ["Quiz game: 5 questions, score at the end", "Store questions in a list of dicts", "Big brother reviews your code"] },
-  { t: "Errors & files", topic: "try/except, open(), json", v: "_uQrJ0TkZlc", note: "Mosh full course: exceptions + files chapters.",
+  { t: "Errors & files", topic: "try/except, open(), json", v: "YfnhD-4gKUM", note: "The exceptions and file handling sections.",
     me: ["try / except / else for bad input", "json.dump and json.load to save data", "Read and write a .csv file"],
     bro: ["Break your quiz game on purpose, read the error", "Fix it with try / except", "Save the high score to a text file"] },
-  { t: "Libraries & APIs", topic: "pip, requests, modules", v: "nLRL_NcnK-4", note: "CS50P: the Libraries lecture (use the chapters).",
-    me: ["pip install requests", "Fetch JSON from a free API and print it", "Make a random joke or quote app"],
-    bro: ["Use random and math modules", "Dice roller: roll two dice, show the total", "Add 'roll again? y/n'"] },
-  { t: "Databases with SQLite", topic: "sqlite3, CRUD", v: "pd-0G0MigUA", note: "Your DB knowledge makes this quick.",
-    me: ["Create a table and insert rows from Python", "SELECT, UPDATE, DELETE", "Build a tiny contacts manager"],
+  { t: "Libraries, APIs & AI", topic: "pip, requests, your first AI agent", v: "eSbeub2ZeNk", note: "Tech With Tim: see how Python talks to an AI model.",
+    me: ["pip install requests; fetch JSON from a free API", "Follow along and run the AI agent yourself", "Change one thing in the agent and explain what it does"],
+    bro: ["Use the random and math modules", "Dice roller: roll two dice, show the total", "Add 'roll again? y/n'"] },
+  { t: "Web app with FastAPI", topic: "routes, templates", v: "iukOehU5aF4", note: "Corey's course: setup, routes and templates.",
+    me: ["Install FastAPI + uvicorn, run hello world", "Serve HTML with templates and your own CSS", "Make 2 pages that link to each other"],
     bro: ["Terminal to-do list: add / show / remove", "Use a while loop menu", "Stop when the user types 'quit'"] },
-  { t: "Flask: your first website", topic: "routes, templates", v: "MwZwr5Tvyxo", note: "Then Part 2 (templates) from the library.",
-    me: ["Install Flask, run hello world", "Use templates with your own HTML/CSS", "Make 2 pages that link to each other"],
+  { t: "Forms + database", topic: "SQLite, saving data", v: "iukOehU5aF4", note: "Corey's course: the database part.",
+    me: ["Connect a SQLite database", "Save data from a form", "Show saved data on a page"],
     bro: ["Save the to-do list to a file", "Add 'mark as done'", "Handle wrong input without crashing"] },
-  { t: "Classes (OOP basics)", topic: "class, __init__, self", v: "nLRL_NcnK-4", note: "CS50P: the Object-Oriented Programming lecture.",
-    me: ["Write a Student class with methods", "Rewrite your contacts app using a class", "Teach brother why classes are useful"],
+  { t: "Classes (OOP basics)", topic: "class, __init__, self", v: "Rq5gJVxz55Q", note: "Baraa's course: object-oriented programming.",
+    me: ["Write a Student class with methods", "Rewrite one of your apps using a class", "Teach brother why classes are useful"],
     bro: ["Watch the first half with big brother", "Make a Pet class with name and speak()", "Make 2 pets and make them speak"] },
-  { t: "Final project — build", topic: "your own idea", v: "yVl_G-F7m8c", note: "No new topic. Build!",
-    me: ["Flask + SQLite app (notes, quiz or to-do site)", "Build the main feature", "Push it to GitHub"],
+  { t: "Final project — build", topic: "your own idea", v: "R_DarTl4a0g", note: "No new topic. Build!",
+    me: ["FastAPI + SQLite app (notes, quiz or to-do site)", "Build the main feature", "Push it to GitHub"],
     bro: ["Text adventure, quiz or upgraded game", "Build the main feature", "Try 15 minutes before asking for help"] },
-  { t: "Demo day 🎉", topic: "show, explain, plan next", v: "ihk_Xglr164", note: "Rewatch any part that still feels weak.",
+  { t: "Demo day 🎉", topic: "show, explain, plan next", v: "Rq5gJVxz55Q", note: "Rewatch any part that still feels weak.",
     me: ["Demo your project to brother", "Read brother's code, explain it line by line", "Write next month's plan in Notes"],
     bro: ["Demo your project to big brother", "Explain your code line by line", "Add 3 topics to 'Going to Learn'"] },
 ];
@@ -821,7 +801,7 @@ function renderHome() {
       <ul class="mini-tasks">${d[S.who].map((t, j) => taskHTML(cd, S.who, j, t)).join("")}</ul>
       <button class="btn sm ghost" data-go="plan">Open full plan<svg><use href="#i-arrow"/></svg></button>
     </div>
-    <div class="thumb thumb-wrap" data-play="${v.id}">${playThumb(v.id)}<div class="badge-tl"><span>${esc(CHANNELS[v.ch].name)}</span><span>${v.lang}</span></div></div>`;
+    <div class="thumb thumb-wrap" data-play="${v.id}">${playThumb(v.id)}<div class="badge-tl"><span>${esc(CHANNELS[v.ch].name)}</span>${v.date ? `<span>${v.date}</span>` : ""}</div></div>`;
   bindTasks($("#todayCard"));
 
   const cw = Object.entries(S.pos).filter(([id]) => V[id]).sort((a, b) => b[1].at - a[1].at);
@@ -906,15 +886,16 @@ function updatePlanMeta() {
 $$("#planFilter button").forEach(b => b.onclick = () => { planFilter = b.dataset.f; $$("#planFilter button").forEach(x => x.classList.toggle("on", x === b)); renderPlan(); });
 
 let vFilter = "All";
-const V_FILTERS = ["All", "In progress", "Hindi", "English", "For me", "For brother", "Web", "Watched"];
+const V_FILTERS = ["All", "In progress", "Full courses", "Beginner", "Projects", "Web", "AI", "For me", "For brother", "Watched"];
 function renderVideos() {
   $("#vFilters").innerHTML = V_FILTERS.map(f => `<button class="filter ${f === vFilter ? "on" : ""}" data-f="${f}">${f === "For me" ? "For " + esc(nm("me")) : f === "For brother" ? "For " + esc(nm("bro")) : f}</button>`).join("");
   $$("#vFilters .filter").forEach(b => b.onclick = () => { vFilter = b.dataset.f; renderVideos(); });
-  const list = VIDEOS.filter(v => vFilter === "All" || v.lang === vFilter || (vFilter === "Web" && (v.level === "Web" || v.ch === "corey"))
+  const tagOf = { "Full courses": "course", "Beginner": "beginner", "Projects": "projects", "Web": "web", "AI": "ai" };
+  const list = VIDEOS.filter(v => vFilter === "All" || v.tags.includes(tagOf[vFilter])
     || (vFilter === "For me" && v.for !== "bro") || (vFilter === "For brother" && v.for !== "me") || (vFilter === "Watched" && S.watched[v.id]) || (vFilter === "In progress" && S.pos[v.id]));
   $("#vGrid").innerHTML = list.length ? list.map(v => `
     <article class="card lift vcard" data-play="${v.id}">
-      <div class="thumb">${playThumb(v.id)}<div class="badge-tl"><span>${v.lang}</span><span>${v.level}</span></div>${S.watched[v.id] ? '<span class="watched-badge">✓ Watched</span>' : ""}</div>
+      <div class="thumb">${playThumb(v.id)}<div class="badge-tl">${v.date ? `<span>${v.date}</span>` : ""}<span>${v.level}</span></div>${S.watched[v.id] ? '<span class="watched-badge">✓ Watched</span>' : ""}</div>
       <div class="vinfo"><h3>${esc(v.title)}</h3><div class="channel">${avatar(v.ch)}${esc(CHANNELS[v.ch].name)}</div><p>${esc(v.desc)}</p>
         <div class="row">${v.for === "both" ? '<span class="chip good">Both</span>' : v.for === "me" ? `<span class="chip accent">${esc(nm("me"))}</span>` : `<span class="chip bro">${esc(nm("bro"))}</span>`}${v.playlist ? '<span class="chip">Playlist</span>' : ""}</div></div>
     </article>`).join("") : `<div class="empty" style="grid-column:1/-1"><div class="em">🎬</div>No videos here yet.</div>`;
