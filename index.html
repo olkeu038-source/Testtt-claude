@@ -301,23 +301,85 @@
   .cw-item .vinfo { padding: 10px 12px 12px; }
   .cw-item h3 { font-size: 13.5px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
-  /* ---------- Modal player ---------- */
-  .modal {
-    position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 20px;
-    background: rgba(15,12,8,.6); backdrop-filter: blur(8px); opacity: 0; pointer-events: none; transition: opacity .3s;
+  /* ---------- Docked study player ---------- */
+  :root { --dock-w: 440px; }
+  .dock {
+    position: fixed; z-index: 60; top: 0; right: 0; bottom: 0; width: var(--dock-w); display: flex; flex-direction: column;
+    background: var(--surface); border-left: 1px solid var(--line); box-shadow: var(--shadow-lg);
+    transform: translateX(105%); transition: transform .45s var(--ease); overflow-y: auto; overscroll-behavior: contain;
   }
-  .modal.open { opacity: 1; pointer-events: auto; }
-  .modal-box {
-    width: min(960px, 100%); background: var(--surface); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-lg);
-    transform: translateY(24px) scale(.96); transition: transform .45s var(--spring);
+  .dock.open { transform: none; }
+  @media (min-width: 1180px) {
+    .dock { box-shadow: none; }
+    body.docked .main { padding-right: var(--dock-w); transition: padding .45s var(--ease); }
   }
-  .modal.open .modal-box { transform: none; }
-  .player { aspect-ratio: 16/9; background: #000; }
-  .player iframe { width: 100%; height: 100%; border: 0; display: block; }
-  .modal-foot { padding: 16px 20px; display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
-  .modal-foot h3 { margin: 0; font-size: 16px; }
-  .modal-foot .channel { margin-top: 2px; }
-  .modal-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .dock-head { display: flex; gap: 10px; align-items: flex-start; padding: 16px 16px 12px; }
+  .dock-head .grow { flex: 1; min-width: 0; }
+  .dock-head h3 { margin: 4px 0 4px; font-size: 15px; line-height: 1.35; }
+  .dock-btns { display: flex; gap: 2px; }
+  .stage { position: relative; background: #000; aspect-ratio: 16/9; max-width: 100%; flex: none; overflow: hidden; }
+  .stage #player, .stage iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .stage:fullscreen { aspect-ratio: auto; }
+  .tap { position: absolute; inset: 0; z-index: 2; background: transparent; border: 0; cursor: pointer; }
+  .stage.waiting .tap { display: none; }  /* let the first tap reach YouTube's own play button (needed on iPhone) */
+  .seek-hint {
+    position: absolute; z-index: 3; top: 50%; width: 76px; height: 76px; margin-top: -38px; border-radius: 50%;
+    background: rgba(0,0,0,.55); color: #fff; display: grid; place-items: center; font: 700 13px var(--sans);
+    opacity: 0; transform: scale(.7); transition: opacity .25s, transform .25s var(--spring); pointer-events: none;
+  }
+  .seek-hint.l { left: 12%; } .seek-hint.r { right: 12%; }
+  .seek-hint.show { opacity: 1; transform: scale(1); }
+  .ctrl { padding: 10px 14px 4px; display: grid; gap: 6px; }
+  .scrub { position: relative; height: 18px; display: flex; align-items: center; }
+  .scrub .rail { position: absolute; left: 0; right: 0; height: 5px; border-radius: 99px; background: var(--bg-2); overflow: hidden; }
+  .scrub .buf { position: absolute; inset: 0 auto 0 0; background: var(--line-2); width: 0; }
+  .scrub .fill { position: absolute; inset: 0 auto 0 0; background: #ff0033; width: 0; }
+  .scrub .marks { position: absolute; left: 0; right: 0; height: 5px; pointer-events: none; }
+  .scrub .marks i { position: absolute; top: -3px; width: 3px; height: 11px; border-radius: 2px; background: var(--gold); transform: translateX(-1px); }
+  .scrub input { position: relative; z-index: 1; width: 100%; margin: 0; height: 18px; background: transparent; -webkit-appearance: none; appearance: none; cursor: pointer; }
+  .scrub input::-webkit-slider-runnable-track { height: 18px; background: transparent; }
+  .scrub input::-moz-range-track { height: 18px; background: transparent; }
+  .scrub input::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; margin-top: 2px; border-radius: 50%; background: #ff0033; border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.4); transition: transform .15s; }
+  .scrub input::-moz-range-thumb { width: 12px; height: 12px; border-radius: 50%; background: #ff0033; border: 2px solid #fff; }
+  .scrub:hover input::-webkit-slider-thumb { transform: scale(1.2); }
+  .ctrl-row { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+  .ctrl-row .grow { flex: 1; }
+  .cbtn {
+    border: 0; background: none; cursor: pointer; height: 36px; min-width: 36px; padding: 0 8px; border-radius: 10px; color: var(--text);
+    display: inline-flex; align-items: center; justify-content: center; gap: 4px; font: 600 12.5px var(--sans); transition: background .2s, transform .15s;
+  }
+  .cbtn:hover { background: var(--bg-2); } .cbtn:active { transform: scale(.92); }
+  .cbtn svg { width: 20px; height: 20px; }
+  .cbtn.pp { background: var(--text); color: var(--bg); width: 42px; height: 42px; border-radius: 50%; }
+  .cbtn.pp svg { width: 18px; height: 18px; }
+  .cbtn.on { background: var(--accent-soft); color: var(--accent); }
+  .time { font: 500 12.5px var(--mono); color: var(--text-2); font-variant-numeric: tabular-nums; padding: 0 6px; white-space: nowrap; }
+  .dock-tabs { margin: 10px 16px 0; display: flex; }
+  .dock-tabs button { flex: 1; }
+  .dock-body { padding: 12px 16px calc(24px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 10px; }
+  .note-form { display: flex; gap: 8px; align-items: center; }
+  .note-form .field { flex: 1; min-width: 0; padding: 9px 12px; }
+  .note-form .chip { font-family: var(--mono); cursor: default; }
+  .vnote { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--line); animation: pop .4s var(--spring) both; }
+  .vnote .stamp { font: 600 12px var(--mono); color: var(--accent); background: var(--accent-soft); border: 0; border-radius: 7px; padding: 3px 7px; cursor: pointer; flex: none; }
+  .vnote .stamp:hover { filter: brightness(.95); }
+  .vnote .grow { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: 14px; }
+  .vnote .meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .kbd-help { font-size: 12px; color: var(--muted); line-height: 1.8; }
+  .kbd-help kbd { font: 600 11px var(--mono); background: var(--bg-2); border: 1px solid var(--line-2); border-bottom-width: 2px; border-radius: 5px; padding: 1px 5px; }
+
+  /* Mini player */
+  .mini {
+    position: fixed; z-index: 55; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); width: 340px; max-width: calc(100% - 32px);
+    display: flex; align-items: center; gap: 10px; padding: 8px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
+    box-shadow: var(--shadow-lg); cursor: pointer; overflow: hidden; animation: rise .4s var(--spring) both;
+  }
+  .mini img { width: 84px; aspect-ratio: 16/9; object-fit: cover; border-radius: 9px; flex: none; background: var(--bg-2); }
+  .mini .grow { flex: 1; min-width: 0; }
+  .mini strong { display: block; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mini .time { padding: 0; font-size: 11.5px; }
+  .mini .bar { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--bg-2); }
+  .mini .bar i { display: block; height: 100%; width: 0; background: #ff0033; }
 
   /* ---------- Journal / goals ---------- */
   .composer { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
@@ -392,8 +454,10 @@
     .bottom-nav button svg { width: 21px; height: 21px; transition: transform .3s var(--spring); }
     .bottom-nav button.active { color: var(--accent); background: var(--accent-soft); }
     .bottom-nav button.active svg { transform: translateY(-1px) scale(1.08); }
-    .modal { padding: 0; align-items: end; }
-    .modal-box { border-radius: 20px 20px 0 0; }
+    .mini { bottom: calc(96px + env(safe-area-inset-bottom, 0px)); left: max(12px, env(safe-area-inset-left, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); width: auto; max-width: none; }
+  }
+  @media (max-width: 620px) {
+    .dock { width: 100%; border-left: 0; padding-top: env(safe-area-inset-top, 0px); }
   }
   @media (max-width: 420px) {
     .switch button { padding: 6px 10px; }
@@ -420,6 +484,11 @@
   <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></symbol>
   <symbol id="i-ext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4 10 14M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><path d="M6 4h4v16H6zM14 4h4v16h-4z" fill="currentColor"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><text x="12" y="15.5" font-size="7.5" font-weight="700" text-anchor="middle" fill="currentColor" stroke="none" font-family="Inter,sans-serif">10</text></symbol>
+  <symbol id="i-fwd" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/><text x="12" y="15.5" font-size="7.5" font-weight="700" text-anchor="middle" fill="currentColor" stroke="none" font-family="Inter,sans-serif">10</text></symbol>
+  <symbol id="i-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></symbol>
+  <symbol id="i-min" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><rect x="11" y="12" width="7" height="5" rx="1" fill="currentColor"/></symbol>
   <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
 </svg>
 
@@ -548,18 +617,57 @@
 
 <nav class="bottom-nav" id="bottomNav"></nav>
 
-<div class="modal" id="modal" aria-hidden="true">
-  <div class="modal-box" role="dialog" aria-modal="true">
-    <div class="player" id="player"></div>
-    <div class="modal-foot">
-      <div><h3 id="mTitle"></h3><div class="channel" id="mChannel"></div></div>
-      <div class="modal-actions">
-        <button class="btn sm accent" id="mWatched"></button>
-        <a class="btn ghost sm" id="mYT" target="_blank" rel="noopener"><svg><use href="#i-ext"/></svg>YouTube</a>
-        <button class="btn ghost sm" id="mClose"><svg><use href="#i-x"/></svg></button>
-      </div>
+<aside class="dock" id="dock" aria-label="Video player" aria-hidden="true">
+  <div class="dock-head">
+    <div class="grow"><div class="eyebrow">Now playing</div><h3 id="dTitle"></h3><div class="channel" id="dChannel"></div></div>
+    <div class="dock-btns">
+      <a class="icon-btn" id="dYT" target="_blank" rel="noopener" title="Open on YouTube"><svg><use href="#i-ext"/></svg></a>
+      <button class="icon-btn" id="dMin" title="Mini player (Esc)"><svg><use href="#i-min"/></svg></button>
+      <button class="icon-btn" id="dClose" title="Close (your spot is saved)"><svg><use href="#i-x"/></svg></button>
     </div>
   </div>
+  <div class="stage waiting" id="stage">
+    <div id="player"></div>
+    <button class="tap" id="tap" aria-label="Play or pause. Double-tap the sides to skip 10 seconds."></button>
+    <div class="seek-hint l" id="hintL">−10s</div><div class="seek-hint r" id="hintR">+10s</div>
+  </div>
+  <div class="ctrl" id="ctrl">
+    <div class="scrub"><div class="rail"><div class="buf" id="buf"></div><div class="fill" id="fill"></div></div><div class="marks" id="marks"></div>
+      <input type="range" id="seek" min="0" max="1000" value="0" step="1" aria-label="Seek"></div>
+    <div class="ctrl-row">
+      <button class="cbtn" id="cBack" title="Back 10 seconds (J)"><svg><use href="#i-back"/></svg></button>
+      <button class="cbtn pp" id="cPlay" title="Play / pause (Space)"><svg><use id="cPlayIc" href="#i-play"/></svg></button>
+      <button class="cbtn" id="cFwd" title="Forward 10 seconds (L)"><svg><use href="#i-fwd"/></svg></button>
+      <span class="time" id="cTime">0:00 / 0:00</span>
+      <span class="grow"></span>
+      <button class="cbtn" id="cSpeed" title="Playback speed ([ and ])">1×</button>
+      <button class="cbtn" id="cCC" title="Captions (C)">CC</button>
+      <button class="cbtn" id="cFull" title="Fullscreen (F)"><svg><use href="#i-full"/></svg></button>
+    </div>
+  </div>
+  <div class="seg dock-tabs" id="dockTabs"><button data-dt="notes" class="on">Notes <span id="noteCount"></span></button><button data-dt="tasks">Today's tasks</button><button data-dt="keys">Shortcuts</button></div>
+  <div class="dock-body">
+    <div id="dt-notes">
+      <form class="note-form" id="noteForm"><span class="chip accent" id="noteAt" title="The note is saved at this time">0:00</span>
+        <input class="field" id="noteText" placeholder="Note at this moment (N)" autocomplete="off" maxlength="300">
+        <button class="btn sm accent">Save</button></form>
+      <div id="noteList" style="display:grid;gap:8px;margin-top:10px"></div>
+    </div>
+    <div id="dt-tasks" hidden></div>
+    <div id="dt-keys" class="kbd-help" hidden>
+      <kbd>Space</kbd> or <kbd>K</kbd> play / pause · <kbd>J</kbd> <kbd>←</kbd> back 10s · <kbd>L</kbd> <kbd>→</kbd> forward 10s<br>
+      <kbd>[</kbd> <kbd>]</kbd> slower / faster · <kbd>N</kbd> write a note · <kbd>C</kbd> captions · <kbd>F</kbd> fullscreen · <kbd>Esc</kbd> mini player<br>
+      On a phone: double-tap the left or right side of the video to skip 10 seconds.
+    </div>
+  </div>
+</aside>
+
+<div class="mini" id="mini" hidden role="button" tabindex="0" aria-label="Open the player">
+  <img id="miniImg" alt="">
+  <div class="grow"><strong id="miniTitle"></strong><span class="time" id="miniTime"></span></div>
+  <button class="cbtn" id="miniPlay" title="Play / pause"><svg><use id="miniPlayIc" href="#i-play"/></svg></button>
+  <button class="cbtn" id="miniClose" title="Close"><svg><use href="#i-x"/></svg></button>
+  <div class="bar"><i id="miniBar"></i></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -672,7 +780,7 @@ const KEY = "pytogether-v2";
 const today0 = () => { const d = new Date(); d.setHours(0,0,0,0); return d; };
 const iso = d => d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
 const defaults = () => ({ checks: {}, watched: {}, learned: [], goals: [], notes: "", names: { me: "", bro: "" },
-  who: "me", tab: "home", theme: "auto", start: iso(today0()), activity: {}, pos: {} });
+  who: "me", tab: "home", theme: "auto", start: iso(today0()), activity: {}, pos: {}, vnotes: {}, speed: 1, cc: false });
 let S = defaults();
 try {
   const raw = localStorage.getItem(KEY);
@@ -764,7 +872,7 @@ function paintSwitch() {
   const bg = $("#learnerSwitch .pill-bg"); bg.style.left = on.offsetLeft + "px"; bg.style.width = on.offsetWidth + "px";
   $$("[data-name]").forEach(el => el.textContent = nm(el.dataset.name));
 }
-$$("#learnerSwitch button").forEach(b => b.onclick = () => { S.who = b.dataset.who; save(); paintSwitch(); render(S.tab); toast(`Switched to ${nm(S.who)}`); });
+$$("#learnerSwitch button").forEach(b => b.onclick = () => { S.who = b.dataset.who; save(); paintSwitch(); render(S.tab); if (PL.id) renderDockTasks(); toast(`Switched to ${nm(S.who)}`); });
 
 /* ================= Renderers ================= */
 function ring(pct, color) {
@@ -902,66 +1010,233 @@ function renderVideos() {
   $("#vGrid").classList.remove("stagger"); void $("#vGrid").offsetWidth; $("#vGrid").classList.add("stagger");
 }
 
-/* Player modal: YouTube IFrame API so we can remember the exact second */
-let curVid = null, ytPlayer = null, posTimer = null, ytApi = null;
+/* ================= Docked study player =================
+   YouTube IFrame API with our own controls, so we can save the exact second,
+   jump to notes, change speed and keep playing while the rest of the app is used. */
+const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
+const PL = { id: null, yt: null, ready: false, dragging: false, noteT: null, tick: null, api: null, open: false };
+
 function loadYT() {
-  if (ytApi) return ytApi;
-  ytApi = new Promise((res, rej) => {
+  if (PL.api) return PL.api;
+  PL.api = new Promise((res, rej) => {
     if (window.YT && YT.Player) return res();
-    window.onYouTubeIframeAPIReady = res;
+    const prev = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => { prev && prev(); res(); };
     const sc = document.createElement("script"); sc.src = "https://www.youtube.com/iframe_api"; sc.onerror = rej; document.head.appendChild(sc);
-    setTimeout(rej, 8000);
-  }).catch(() => { ytApi = null; throw 0; });
-  return ytApi;
+    setTimeout(rej, 9000);
+  }).catch(e => { PL.api = null; throw e; });
+  return PL.api;
 }
+const ok = () => PL.yt && PL.ready && typeof PL.yt.getCurrentTime === "function";
+const curT = () => ok() ? PL.yt.getCurrentTime() || 0 : (S.pos[PL.id]?.t || 0);
+const durT = () => ok() ? PL.yt.getDuration() || 0 : (S.pos[PL.id]?.d || 0);
+const playing = () => ok() && PL.yt.getPlayerState() === 1;
+
 function savePos() {
-  if (!ytPlayer || !curVid || typeof ytPlayer.getCurrentTime !== "function") return;
-  const t = ytPlayer.getCurrentTime() || 0, d = ytPlayer.getDuration() || 0;
-  if (d && d - t < 20) { delete S.pos[curVid]; S.watched[curVid] = true; }
-  else if (t > 5) S.pos[curVid] = { t, d, at: Date.now() };
+  if (!ok() || !PL.id) return;
+  const t = curT(), d = durT();
+  if (d && d - t < 20) { if (S.pos[PL.id]) delete S.pos[PL.id]; S.watched[PL.id] = true; }
+  else if (t > 5) S.pos[PL.id] = { t, d, at: Date.now() };
   save();
 }
-document.addEventListener("click", e => { const p = e.target.closest("[data-play]"); if (p) openPlayer(p.dataset.play); });
+
+document.addEventListener("click", e => {
+  const p = e.target.closest("[data-play]"); if (!p) return;
+  e.preventDefault(); openPlayer(p.dataset.play);
+});
+
 function openPlayer(id) {
-  const v = V[id], start = Math.floor(S.pos[id]?.t || 0); curVid = id;
-  $("#player").innerHTML = '<div id="ytp" style="width:100%;height:100%"></div>';
-  $("#mTitle").textContent = v.title; $("#mChannel").innerHTML = avatar(v.ch) + esc(CHANNELS[v.ch].name);
-  $("#mYT").href = ytUrl(v) + (start ? "&t=" + start + "s" : ""); paintWatched();
-  $("#modal").classList.add("open"); $("#modal").setAttribute("aria-hidden", "false"); document.body.style.overflow = "hidden";
-  history.pushState({ player: id }, "");  // phone back button closes the player instead of leaving the site
+  if (PL.id === id && PL.yt) { expandDock(); return; }
+  if (PL.id) { savePos(); destroyPlayer(); }
+  const v = V[id], start = Math.floor(S.pos[id]?.t || 0);
+  PL.id = id;
+  $("#dTitle").textContent = v.title;
+  $("#dChannel").innerHTML = avatar(v.ch) + esc(CHANNELS[v.ch].name) + (v.date ? ` · ${v.date}` : "");
+  $("#dYT").href = ytUrl(v) + (start ? "&t=" + start + "s" : "");
+  $("#miniImg").src = thumb(id, "mqdefault"); $("#miniTitle").textContent = v.title;
+  $("#stage").classList.add("waiting");
+  $("#ctrl").hidden = false;
+  paintSpeed(); paintCC(); renderNotes(); renderDockTasks(); paintPlay();
+  expandDock();
   if (start) toast(`Resuming at ${fmt(start)}`);
   loadYT().then(() => {
-    if (curVid !== id) return;
-    ytPlayer = new YT.Player("ytp", { videoId: id, host: "https://www.youtube-nocookie.com",
-      playerVars: { autoplay: 1, rel: 0, modestbranding: 1, playsinline: 1, start },
+    if (PL.id !== id) return;
+    $("#stage").querySelector("#player")?.remove();
+    const host = document.createElement("div"); host.id = "player"; $("#stage").prepend(host);
+    PL.ready = false;
+    PL.yt = new YT.Player("player", {
+      videoId: id, host: "https://www.youtube.com",  // youtube.com (not nocookie) so a signed-in Premium account skips ads
+      playerVars: { autoplay: 1, controls: 0, disablekb: 1, rel: 0, playsinline: 1, iv_load_policy: 3, modestbranding: 1, start, cc_load_policy: S.cc ? 1 : 0 },
       events: {
-        onReady: e => { if (start) e.target.seekTo(start, true); e.target.playVideo(); },
-        onStateChange: e => { if (e.data === 2) savePos(); if (e.data === 0) { savePos(); paintWatched(); toast("Finished 🎬 marked as watched"); } },
-      } });
-    clearInterval(posTimer); posTimer = setInterval(savePos, 5000);
-  }).catch(() => {  // API blocked or offline: plain embed, still starts at the saved second
-    $("#player").innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&start=${start}" title="${esc(v.title)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen style="width:100%;height:100%;border:0"></iframe>`;
+        onReady: e => { PL.ready = true; try { e.target.setPlaybackRate(S.speed); } catch (_) {} if (start) e.target.seekTo(start, true); e.target.playVideo(); paintMarks(); },
+        onStateChange: e => {
+          if (e.data === 1) $("#stage").classList.remove("waiting");
+          if (e.data === 2) savePos();
+          if (e.data === 0) { savePos(); toast("Finished 🎬 marked as watched"); markActive(); save(); }
+          paintPlay();
+        },
+        onPlaybackRateChange: e => { S.speed = e.data; save(); paintSpeed(); },
+      },
+    });
+    clearInterval(PL.tick); PL.tick = setInterval(tick, 250);
+  }).catch(() => {
+    if (PL.id !== id) return;  // API blocked or offline: plain YouTube embed, still starts at the saved second
+    $("#stage").querySelector("#player").outerHTML = `<iframe id="player" src="https://www.youtube.com/embed/${id}?autoplay=1&rel=0&playsinline=1&start=${start}" title="${esc(v.title)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
+    $("#ctrl").hidden = true; toast("Basic player loaded. Notes and resume need YouTube's player API.");
   });
 }
-function paintWatched() { $("#mWatched").innerHTML = S.watched[curVid] ? '<svg><use href="#i-check"/></svg>Watched' : "Mark as watched"; $("#mWatched").classList.toggle("accent", !S.watched[curVid]); }
-function closePlayer(fromBack) {
-  if (!$("#modal").classList.contains("open")) return;
-  savePos(); clearInterval(posTimer);
-  const p = S.pos[curVid]; if (p) toast(`Saved at ${fmt(p.t)} — tap it later to resume`);
-  if (ytPlayer && ytPlayer.destroy) try { ytPlayer.destroy(); } catch (e) {}
-  ytPlayer = null; curVid = null;
-  $("#modal").classList.remove("open"); $("#modal").setAttribute("aria-hidden", "true"); document.body.style.overflow = "";
-  setTimeout(() => { if (!curVid) $("#player").innerHTML = ""; }, 300);
-  if (!fromBack && history.state && history.state.player) history.back();
+
+function destroyPlayer() {
+  clearInterval(PL.tick);
+  if (PL.yt && PL.yt.destroy) try { PL.yt.destroy(); } catch (_) {}
+  PL.yt = null; PL.ready = false;
+  const st = $("#stage"); st.querySelector("#player")?.remove();
+  const host = document.createElement("div"); host.id = "player"; st.prepend(host);
+}
+
+function expandDock() {
+  PL.open = true;
+  $("#dock").classList.add("open"); $("#dock").setAttribute("aria-hidden", "false");
+  document.body.classList.add("docked"); $("#mini").hidden = true;
+  if (matchMedia("(max-width: 620px)").matches) { document.body.style.overflow = "hidden"; if (!history.state?.dock) history.pushState({ dock: 1 }, ""); }
+}
+function minimizeDock(fromBack) {
+  if (!PL.open) return;
+  PL.open = false; savePos();
+  $("#dock").classList.remove("open"); $("#dock").setAttribute("aria-hidden", "true");
+  document.body.classList.remove("docked"); document.body.style.overflow = "";
+  $("#mini").hidden = !PL.id; tick();
+  if (!fromBack && history.state?.dock) history.back();
+}
+function closePlayer() {
+  if (!PL.id) return;
+  savePos();
+  const p = S.pos[PL.id]; if (p) toast(`Saved at ${fmt(p.t)}. Tap the video later to resume.`);
+  minimizeDock(); destroyPlayer(); PL.id = null; $("#mini").hidden = true;
   render(S.tab);
 }
-addEventListener("popstate", () => closePlayer(true));
+addEventListener("popstate", () => { if (PL.open) minimizeDock(true); });
 addEventListener("pagehide", savePos);
 document.addEventListener("visibilitychange", () => { if (document.hidden) savePos(); });
-$("#mClose").onclick = () => closePlayer();
-$("#modal").onclick = e => { if (e.target.id === "modal") closePlayer(); };
-addEventListener("keydown", e => { if (e.key === "Escape") closePlayer(); });
-$("#mWatched").onclick = () => { S.watched[curVid] = !S.watched[curVid]; if (S.watched[curVid]) { markActive(); toast("Marked as watched 🎬"); } save(); paintWatched(); };
+let saveEvery = 0;
+function tick() {
+  if (!PL.id) return;
+  const t = curT(), d = durT(), pct = d ? t / d : 0;
+  if (!PL.dragging) { $("#seek").value = Math.round(pct * 1000); $("#fill").style.width = pct * 100 + "%"; $("#cTime").textContent = `${fmt(t)} / ${fmt(d)}`; }
+  if (ok()) $("#buf").style.width = (PL.yt.getVideoLoadedFraction() || 0) * 100 + "%";
+  if (PL.noteT === null) $("#noteAt").textContent = fmt(t);
+  $("#miniTime").textContent = `${fmt(t)} / ${fmt(d)}`; $("#miniBar").style.width = pct * 100 + "%";
+  if (++saveEvery % 20 === 0 && playing()) savePos();  // every ~5s while playing
+  if (saveEvery % 8 === 0) paintMarks();
+}
+function paintPlay() {
+  const ic = playing() ? "#i-pause" : "#i-play";
+  $("#cPlayIc").setAttribute("href", ic); $("#miniPlayIc").setAttribute("href", ic);
+}
+function paintSpeed() { $("#cSpeed").textContent = (S.speed || 1) + "×"; $("#cSpeed").classList.toggle("on", S.speed !== 1); }
+function paintCC() { $("#cCC").classList.toggle("on", !!S.cc); }
+let marksKey = "";
+function paintMarks() {
+  const d = durT(), ns = S.vnotes[PL.id] || [], key = d + ":" + ns.map(n => n.t).join(",");
+  if (key === marksKey) return; marksKey = key;
+  $("#marks").innerHTML = d ? ns.map(n => `<i style="left:${Math.min(100, n.t / d * 100)}%" title="${esc(fmt(n.t))}"></i>`).join("") : "";
+}
+
+/* controls */
+function togglePlay() { if (!ok()) return; playing() ? PL.yt.pauseVideo() : PL.yt.playVideo(); setTimeout(paintPlay, 120); }
+function skip(sec) {
+  if (!ok()) return; const d = durT();
+  PL.yt.seekTo(Math.max(0, Math.min(d - 1, curT() + sec)), true); tick();
+  const h = $(sec < 0 ? "#hintL" : "#hintR"); h.classList.add("show"); clearTimeout(h._t); h._t = setTimeout(() => h.classList.remove("show"), 450);
+}
+function seekTo(t, play = true) { if (!ok()) return; PL.yt.seekTo(t, true); if (play) PL.yt.playVideo(); tick(); }
+function setSpeed(dir) {
+  const i = SPEEDS.indexOf(S.speed), n = dir === 0 ? SPEEDS[(i + 1) % SPEEDS.length] : SPEEDS[Math.max(0, Math.min(SPEEDS.length - 1, (i < 0 ? 2 : i) + dir))];
+  S.speed = n; save(); paintSpeed(); if (ok()) PL.yt.setPlaybackRate(n); toast(`Speed ${n}×`);
+}
+function toggleCC() {
+  S.cc = !S.cc; save(); paintCC();
+  if (ok()) try { S.cc ? PL.yt.loadModule("captions") : PL.yt.unloadModule("captions"); } catch (_) {}
+  toast(S.cc ? "Captions on" : "Captions off");
+}
+function fullscreen() {
+  const st = $("#stage");
+  if (document.fullscreenElement) return document.exitFullscreen();
+  (st.requestFullscreen || st.webkitRequestFullscreen || (() => Promise.reject())).call(st)?.catch?.(() => toast("Fullscreen isn't available here. Rotate your phone instead."));
+}
+$("#cPlay").onclick = togglePlay; $("#cBack").onclick = () => skip(-10); $("#cFwd").onclick = () => skip(10);
+$("#cSpeed").onclick = () => setSpeed(0); $("#cCC").onclick = toggleCC; $("#cFull").onclick = fullscreen;
+$("#dMin").onclick = () => minimizeDock(); $("#dClose").onclick = closePlayer;
+$("#seek").oninput = e => { PL.dragging = true; const t = e.target.value / 1000 * durT(); $("#fill").style.width = e.target.value / 10 + "%"; $("#cTime").textContent = `${fmt(t)} / ${fmt(durT())}`; };
+$("#seek").onchange = e => { PL.dragging = false; seekTo(e.target.value / 1000 * durT()); };
+
+// tap = play/pause, double-tap a side = skip 10s (like the YouTube app)
+let tapT = null;
+$("#tap").onclick = e => {
+  const r = e.currentTarget.getBoundingClientRect(), side = e.clientX - r.left < r.width / 2 ? -10 : 10;
+  if (tapT) { clearTimeout(tapT); tapT = null; skip(side); return; }
+  tapT = setTimeout(() => { tapT = null; togglePlay(); }, 260);
+};
+
+$("#mini").onclick = e => { if (!e.target.closest("button")) expandDock(); };
+$("#mini").onkeydown = e => { if (e.key === "Enter") expandDock(); };
+$("#miniPlay").onclick = togglePlay; $("#miniClose").onclick = closePlayer;
+
+addEventListener("keydown", e => {
+  if (!PL.id) return;
+  const typing = e.target.closest("input, textarea, select, [contenteditable]");
+  if (e.key === "Escape") { if (typing && e.target.id === "noteText") { e.target.blur(); return; } if (PL.open) minimizeDock(); return; }
+  if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
+  const k = e.key.toLowerCase(), act = {
+    " ": togglePlay, k: togglePlay, j: () => skip(-10), arrowleft: () => skip(-5), l: () => skip(10), arrowright: () => skip(5),
+    "[": () => setSpeed(-1), "]": () => setSpeed(1), c: toggleCC, f: fullscreen,
+    n: () => { if (!PL.open) expandDock(); showDockTab("notes"); $("#noteText").focus(); },
+  }[k];
+  if (act) { e.preventDefault(); act(); }
+});
+
+/* dock tabs */
+function showDockTab(t) {
+  $$("#dockTabs button").forEach(b => b.classList.toggle("on", b.dataset.dt === t));
+  ["notes", "tasks", "keys"].forEach(x => $("#dt-" + x).hidden = x !== t);
+}
+$$("#dockTabs button").forEach(b => b.onclick = () => showDockTab(b.dataset.dt));
+
+/* timestamp notes */
+$("#noteText").onfocus = () => { if (PL.noteT === null) { PL.noteT = curT(); $("#noteAt").textContent = fmt(PL.noteT); } };
+$("#noteText").onblur = () => { if (!$("#noteText").value.trim()) PL.noteT = null; };
+$("#noteForm").onsubmit = e => {
+  e.preventDefault(); const text = $("#noteText").value.trim(); if (!text || !PL.id) return;
+  const t = PL.noteT ?? curT(); (S.vnotes[PL.id] ||= []).push({ t, text, who: S.who, ts: Date.now() });
+  S.vnotes[PL.id].sort((a, b) => a.t - b.t); markActive(); save();
+  $("#noteText").value = ""; PL.noteT = null; $("#noteText").blur(); renderNotes(); marksKey = ""; paintMarks();
+  toast(`Note saved at ${fmt(t)}`);
+};
+function renderNotes() {
+  const ns = S.vnotes[PL.id] || [];
+  $("#noteCount").textContent = ns.length ? `(${ns.length})` : "";
+  $("#noteList").innerHTML = ns.length ? ns.map((n, i) => `
+    <div class="vnote"><button class="stamp" data-t="${n.t}" title="Jump to ${fmt(n.t)}">${fmt(n.t)}</button>
+      <div class="grow">${esc(n.text)}<div class="meta">${esc(nm(n.who))} · ${timeAgo(n.ts)}</div></div>
+      <button class="icon-btn" data-learn="${i}" title="Copy to What We Learned"><svg><use href="#i-book"/></svg></button>
+      <button class="icon-btn" data-ndel="${i}" title="Delete note"><svg><use href="#i-x"/></svg></button></div>`).join("")
+    : `<div class="kbd-help" style="padding:6px 2px">Pause on anything important and write a note. Each note keeps its timestamp, so you can tap it later to jump straight back.</div>`;
+  $$("#noteList .stamp").forEach(b => b.onclick = () => seekTo(+b.dataset.t));
+  $$("#noteList [data-ndel]").forEach(b => b.onclick = () => { ns.splice(+b.dataset.ndel, 1); save(); renderNotes(); marksKey = ""; paintMarks(); });
+  $$("#noteList [data-learn]").forEach(b => b.onclick = () => {
+    const n = ns[+b.dataset.learn];
+    S.learned.unshift({ text: `${n.text} (${V[PL.id].title.split(/[—:-]/)[0].trim()} @ ${fmt(n.t)})`, who: n.who, date: new Date().toLocaleDateString(undefined, { day: "numeric", month: "short" }), ts: Date.now(), done: false, fresh: true });
+    save(); toast("Copied to What We Learned ✨");
+  });
+}
+function renderDockTasks() {
+  const cd = currentDay(), days = DAYS.map((d, i) => i).filter(i => DAYS[i].v === PL.id);
+  const i = days.includes(cd) ? cd : days.find(x => dayProgress(x, S.who) < 1) ?? days[0] ?? cd, d = DAYS[i];
+  $("#dt-tasks").innerHTML = `<div class="eyebrow" style="color:var(--accent)">Day ${i + 1} · ${esc(nm(S.who))}</div>
+    <div style="font-weight:600;margin:4px 0 2px">${esc(d.t)}</div><div class="kbd-help" style="margin-bottom:6px">${esc(d.note)}</div>
+    <ul style="margin:0;padding:0">${d[S.who].map((t, j) => taskHTML(i, S.who, j, t)).join("")}</ul>`;
+  bindTasks($("#dt-tasks"));
+}
 
 /* Journal & goals */
 function feed(kind) {
